@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>猜猜TA是谁 · 奢华杂志风</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;800&family=Noto+Serif+SC:wght@300;400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F8F6F3;
+      --card: #FFFFFF;
+      --fg: #1A1A1A;
+      --fg-light: #4A4A4A;
+      --muted: #9A9590;
+      --accent: #8B6914;
+      --accent-light: rgba(139,105,20,0.08);
+      --success: #4A7C59;
+      --danger: #9B2335;
+      --border: rgba(0,0,0,0.06);
+      --serif: 'Playfair Display', 'Noto Serif SC', Georgia, serif;
+      --sans: 'Noto Sans SC', -apple-system, sans-serif;
+      --transition: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 0 28px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* === HOME === */
+    .home-screen {
+      display: flex; flex-direction: column;
+      justify-content: center; min-height: 100vh;
+    }
+    .home-brand {
+      font-family: var(--sans); font-size: 10px; letter-spacing: 6px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 40px;
+    }
+    .home-title {
+      font-family: var(--serif); font-size: 42px; font-weight: 800;
+      line-height: 1.15; margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+    .home-divider {
+      width: 40px; height: 1.5px; background: var(--accent);
+      margin: 20px 0;
+    }
+    .home-sub {
+      font-size: 15px; color: var(--fg-light); line-height: 1.8;
+      font-weight: 300; margin-bottom: 48px;
+    }
+    .mode-list { display: flex; flex-direction: column; }
+    .mode-item {
+      display: flex; align-items: center; gap: 20px;
+      padding: 22px 0; cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: all 0.4s var(--transition);
+    }
+    .mode-item:first-child { border-top: 1px solid var(--border); }
+    .mode-item:hover { padding-left: 8px; }
+    .mode-item:hover .mode-arrow { opacity: 1; transform: translateX(0); }
+    .mode-num {
+      font-family: var(--serif); font-size: 28px; font-weight: 400;
+      color: var(--muted); width: 36px;
+    }
+    .mode-body { flex: 1; }
+    .mode-name {
+      font-family: var(--serif); font-size: 17px; font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .mode-desc { font-size: 12px; color: var(--muted); font-weight: 300; }
+    .mode-arrow {
+      font-size: 18px; color: var(--accent); opacity: 0;
+      transform: translateX(-8px); transition: all 0.4s var(--transition);
+    }
+    .mode-tag {
+      font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--muted); border: 1px solid var(--border);
+      padding: 3px 10px;
+    }
+
+    /* === GAME === */
+    .game-screen { display: none; flex-direction: column; min-height: 100vh; padding-top: 20px; }
+    .game-screen.active { display: flex; }
+    .home-screen.hidden { display: none; }
+
+    .game-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 32px;
+    }
+    .game-mode-label {
+      font-family: var(--sans); font-size: 9px; letter-spacing: 4px;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .game-score {
+      font-family: var(--serif); font-size: 14px; color: var(--accent);
+    }
+
+    /* Progress - elegant dots */
+    .progress-row {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 36px;
+    }
+    .prog-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 1px solid var(--muted); transition: all 0.5s var(--transition);
+    }
+    .prog-dot.done { background: var(--accent); border-color: var(--accent); }
+    .prog-dot.now {
+      background: transparent; border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    .prog-line { flex: 1; height: 1px; background: var(--border); }
+
+    /* Clue */
+    .clue-block {
+      margin-bottom: 32px; animation: fadeUp 0.6s var(--transition);
+    }
+    .clue-label {
+      font-family: var(--sans); font-size: 9px; letter-spacing: 4px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
+    }
+    .clue-text {
+      font-family: var(--serif); font-size: 22px; font-weight: 400;
+      line-height: 1.65; color: var(--fg);
+    }
+    .clue-ornament {
+      width: 24px; height: 1px; background: var(--accent);
+      margin-top: 20px;
+    }
+
+    /* Temperature - subtle */
+    .temp-whisper {
+      display: none; align-items: center; gap: 12px;
+      padding: 14px 0; margin-bottom: 24px;
+      font-size: 12px; color: var(--muted);
+    }
+    .temp-whisper.show { display: flex; }
+    .temp-pips { display: flex; gap: 5px; }
+    .temp-pip {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border); transition: background 0.4s;
+    }
+    .temp-pip.lit { background: var(--accent); }
+    .temp-word { font-style: italic; }
+
+    /* Input */
+    .input-section { margin-top: auto; padding-bottom: 36px; }
+    .input-line {
+      display: flex; align-items: center; gap: 12px;
+      border-bottom: 1.5px solid var(--fg);
+      padding-bottom: 4px; margin-bottom: 16px;
+      transition: border-color 0.3s;
+    }
+    .input-line:focus-within { border-color: var(--accent); }
+    .guess-input {
+      flex: 1; padding: 12px 0; background: none; border: none;
+      font-family: var(--sans); font-size: 16px; font-weight: 300;
+      color: var(--fg); outline: none;
+    }
+    .guess-input::placeholder { color: #C8C4BF; }
+    .submit-btn {
+      padding: 12px 0; background: none; border: none;
+      font-family: var(--serif); font-size: 14px; font-weight: 600;
+      color: var(--accent); cursor: pointer; letter-spacing: 1px;
+      transition: opacity 0.3s;
+    }
+    .submit-btn:hover { opacity: 0.7; }
+    .skip-btn {
+      font-size: 12px; color: var(--muted); background: none;
+      border: none; cursor: pointer; font-weight: 300;
+      text-decoration: underline; text-underline-offset: 4px;
+      text-decoration-color: var(--border);
+    }
+    .skip-btn:hover { color: var(--fg); }
+
+    /* Wrong shake */
+    .shake { animation: elegantShake 0.5s var(--transition); }
+    @keyframes elegantShake {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-4px)}
+      40%{transform:translateX(4px)} 60%{transform:translateX(-2px)} 80%{transform:translateX(2px)}
+    }
+
+    /* Result */
+    .result-overlay {
+      display: none; position: fixed; inset: 0;
+      background: var(--bg); z-index: 100;
+      flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+      padding: 48px 32px;
+    }
+    .result-overlay.show { display: flex; animation: fadeUp 0.6s var(--transition); }
+    .result-emoji { font-size: 48px; margin-bottom: 24px; }
+    .result-verdict {
+      font-family: var(--serif); font-size: 32px; font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .result-name {
+      font-size: 15px; color: var(--fg-light); font-weight: 300;
+      margin-bottom: 36px;
+    }
+    .result-card {
+      background: var(--card); padding: 32px 48px;
+      box-shadow: 0 1px 20px rgba(0,0,0,0.04);
+      margin-bottom: 40px;
+    }
+    .result-score-label {
+      font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    .result-score-num {
+      font-family: var(--serif); font-size: 56px; font-weight: 800;
+      color: var(--accent);
+    }
+    .result-stars {
+      font-size: 18px; margin: 12px 0 8px; letter-spacing: 4px;
+    }
+    .result-detail { font-size: 11px; color: var(--muted); font-weight: 300; }
+    .again-btn {
+      padding: 14px 48px; background: var(--fg); color: var(--bg);
+      border: none; font-family: var(--serif); font-size: 14px;
+      font-weight: 600; cursor: pointer; letter-spacing: 1px;
+      transition: opacity 0.3s;
+    }
+    .again-btn:hover { opacity: 0.8; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="home-screen" id="homeScreen">
+  <div class="home-brand">Guess Who</div>
+  <div class="home-title">猜猜<br>TA是谁</div>
+  <div class="home-divider"></div>
+  <div class="home-sub">
+    一场关于名字的游戏。<br>
+    线索逐条揭晓，智慧一击即中。
+  </div>
+  <div class="mode-list">
+    <div class="mode-item" onclick="startGame()">
+      <div class="mode-num">I</div>
+      <div class="mode-body">
+        <div class="mode-name">渐进揭秘</div>
+        <div class="mode-desc">线索逐条出现，越早猜对越厉害</div>
+      </div>
+      <div class="mode-arrow">→</div>
+    </div>
+    <div class="mode-item" onclick="void(0)">
+      <div class="mode-num">II</div>
+      <div class="mode-body">
+        <div class="mode-name">二十问</div>
+        <div class="mode-desc">只问是非题，二十个问题内破案</div>
+      </div>
+      <div class="mode-tag">即将推出</div>
+    </div>
+    <div class="mode-item" onclick="void(0)">
+      <div class="mode-num">III</div>
+      <div class="mode-body">
+        <div class="mode-name">描述接龙</div>
+        <div class="mode-desc">三个关键词，猜出一个名字</div>
+      </div>
+      <div class="mode-tag">即将推出</div>
+    </div>
+  </div>
+</div>
+
+<div class="game-screen" id="gameScreen">
+  <div class="game-header">
+    <div class="game-mode-label">渐进揭秘</div>
+    <div class="game-score">SCORE <span id="scoreNum">0</span></div>
+  </div>
+
+  <div class="progress-row" id="progressRow"></div>
+
+  <div class="clue-block" id="clueBlock">
+    <div class="clue-label">线索 <span id="clueNum">I</span></div>
+    <div class="clue-text" id="clueText"></div>
+    <div class="clue-ornament"></div>
+  </div>
+
+  <div class="temp-whisper" id="tempWhisper">
+    <div class="temp-pips" id="tempPips"></div>
+    <span class="temp-word" id="tempWord"></span>
+  </div>
+
+  <div class="input-section">
+    <div class="input-line">
+      <input class="guess-input" id="guessInput" placeholder="你的答案" autocomplete="off">
+      <button class="submit-btn" onclick="submitGuess()">确认</button>
+    </div>
+    <button class="skip-btn" onclick="nextClue()">跳过这条线索</button>
+  </div>
+</div>
+
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-emoji" id="resultEmoji">✦</div>
+  <div class="result-verdict" id="resultVerdict"></div>
+  <div class="result-name" id="resultName"></div>
+  <div class="result-card">
+    <div class="result-score-label">最终得分</div>
+    <div class="result-score-num" id="resultScore">0</div>
+    <div class="result-stars" id="resultStars"></div>
+    <div class="result-detail" id="resultDetail"></div>
+  </div>
+  <button class="again-btn" onclick="resetGame()">再来一局</button>
+</div>
+
+<script>
+const questions=[
+  {name:"诸葛亮",aliases:["孔明","卧龙","诸葛孔明"],
+   clues:["这是一位中国古代的政治家","他活跃在东汉末年到三国时期","他是一位著名的军事谋略家","他被三顾茅庐请出山","他的标志性形象是手持羽扇、头戴纶巾","他写了一篇著名的出师表","他的名字中有一个"亮"字","他的姓氏是一个复姓"]},
+  {name:"灭霸",aliases:["Thanos","萨诺斯","紫薯"],
+   clues:["这是一个虚构角色","他来自一部超级英雄电影","他是漫威宇宙的角色","他是一个反派，但自认为在拯救宇宙","他戴着一只金色手套，上面有六颗宝石","他打了一个响指，消灭了一半生命","他的皮肤是紫色的","他的名字在希腊语中意为"死亡""]},
+  {name:"周杰伦",aliases:["Jay Chou","杰伦","周董","小公举"],
+   clues:["这是一位华语音乐人","他来自中国台湾","他被称为"亚洲流行天王"","他的音乐风格融合了中国风和R&B","他有一首歌叫《青花瓷》","他的口头禅是"哎呦不错哦"","他娶了一位模特叫昆凌","他的姓氏是一个朝代名"]}
+];
+const roman=['I','II','III','IV','V','VI','VII','VIII'];
+let cur,idx,score;const m=[8,7,6,5,4,3,2,1];
+
+function startGame(){
+  document.getElementById('homeScreen').classList.add('hidden');
+  const g=document.getElementById('gameScreen');g.classList.add('active');g.style.display='flex';
+  cur=questions[Math.floor(Math.random()*questions.length)];
+  idx=0;score=0;render();
+}
+
+function render(){
+  const pr=document.getElementById('progressRow');pr.innerHTML='';
+  for(let i=0;i<8;i++){
+    const d=document.createElement('div');
+    d.className='prog-dot'+(i<idx?' done':'')+(i===idx?' now':'');
+    pr.appendChild(d);
+    if(i<7){const l=document.createElement('div');l.className='prog-line';pr.appendChild(l);}
+  }
+  const cb=document.getElementById('clueBlock');
+  cb.style.animation='none';cb.offsetHeight;cb.style.animation='fadeUp 0.6s var(--transition)';
+  document.getElementById('clueNum').textContent=roman[idx];
+  document.getElementById('clueText').textContent=cur.clues[idx];
+  document.getElementById('scoreNum').textContent=score;
+}
+
+function nextClue(){if(idx>=7)return;idx++;render();document.getElementById('guessInput').value='';document.getElementById('tempWhisper').classList.remove('show');}
+
+function submitGuess(){
+  const v=document.getElementById('guessInput').value.trim();if(!v)return;
+  const n=v.toLowerCase().replace(/\s/g,'');
+  const ok=n===cur.name.toLowerCase().replace(/\s/g,'')||cur.aliases.some(a=>n===a.toLowerCase().replace(/\s/g,''));
+  if(ok){score+=Math.round(100*m[idx]*1.5);showResult(true);}
+  else{
+    const cb=document.getElementById('clueBlock');cb.classList.add('shake');setTimeout(()=>cb.classList.remove('shake'),500);
+    showTemp();
+    if(idx<7)nextClue();else showResult(false);
+  }
+}
+
+function showTemp(){
+  const w=document.getElementById('tempWhisper');w.classList.add('show');
+  const pp=document.getElementById('tempPips');pp.innerHTML='';
+  for(let i=0;i<5;i++){const p=document.createElement('div');p.className='temp-pip'+(i<=idx?' lit':'');pp.appendChild(p);}
+  const words=['Distant','Close','Warmer','Almost','Burning'];
+  document.getElementById('tempWord').textContent=words[Math.min(idx,4)];
+}
+
+function showResult(ok){
+  const o=document.getElementById('resultOverlay');o.classList.add('show');
+  document.getElementById('resultEmoji').textContent=ok?'✦':'○';
+  document.getElementById('resultVerdict').textContent=ok?'精准命中':'答案揭晓';
+  document.getElementById('resultName').textContent=`${cur.name}`;
+  if(!ok)score=50;
+  document.getElementById('resultScore').textContent=score;
+  document.getElementById('resultStars').textContent='★'.repeat(ok?Math.max(1,5-idx):1)+'☆'.repeat(ok?Math.min(idx,4):4);
+  document.getElementById('resultDetail').textContent=`第${idx+1}条线索 · 难度 ×1.5`;
+}
+
+function resetGame(){document.getElementById('resultOverlay').classList.remove('show');document.getElementById('tempWhisper').classList.remove('show');cur=questions[Math.floor(Math.random()*questions.length)];idx=0;score=0;render();}
+
+document.getElementById('guessInput').addEventListener('keydown',e=>{if(e.key==='Enter')submitGuess();});
+</script>
+</body>
+</html>

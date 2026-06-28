@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>猜猜TA是谁 · 暗金奢华</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0A0A0A;
+      --surface: #111111;
+      --surface-light: #1A1A1A;
+      --border: #222222;
+      --fg: #E8E4DD;
+      --fg-dim: #A09888;
+      --muted: #5A5550;
+      --gold: #C9A84C;
+      --gold-light: #D4B85C;
+      --gold-dim: rgba(201,168,76,0.12);
+      --gold-glow: rgba(201,168,76,0.25);
+      --success: #5A8F6A;
+      --danger: #8B3A3A;
+      --serif: 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
+      --sans: 'Noto Sans SC', -apple-system, sans-serif;
+    }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 0 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Subtle texture */
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.03) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* === HOME === */
+    .home-screen {
+      display: flex; flex-direction: column;
+      justify-content: center; min-height: 100vh;
+      position: relative; z-index: 1; text-align: center;
+    }
+    .home-crest {
+      width: 48px; height: 48px; margin: 0 auto 24px;
+      border: 1.5px solid var(--gold); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .home-title {
+      font-family: var(--serif); font-size: 38px; font-weight: 600;
+      color: var(--fg); margin-bottom: 8px;
+      letter-spacing: 2px;
+    }
+    .home-line {
+      width: 50px; height: 1px; background: var(--gold);
+      margin: 16px auto;
+    }
+    .home-sub {
+      font-family: var(--serif); font-size: 15px; font-style: italic;
+      color: var(--fg-dim); margin-bottom: 52px; line-height: 1.8;
+    }
+    .mode-col { display: flex; flex-direction: column; gap: 2px; }
+    .mode-row {
+      display: flex; align-items: center; gap: 16px;
+      padding: 20px 24px; cursor: pointer;
+      background: var(--surface); border: 1px solid var(--border);
+      transition: all 0.4s ease;
+    }
+    .mode-row:hover {
+      background: var(--surface-light);
+      border-color: var(--gold);
+      box-shadow: 0 0 24px var(--gold-dim);
+    }
+    .mode-row:first-child { border-radius: 4px 4px 0 0; }
+    .mode-row:last-child { border-radius: 0 0 4px 4px; }
+    .mode-icon { font-size: 18px; width: 28px; text-align: center; }
+    .mode-info { flex: 1; text-align: left; }
+    .mode-name { font-family: var(--serif); font-size: 17px; font-weight: 600; letter-spacing: 0.5px; }
+    .mode-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .mode-badge {
+      font-family: var(--serif); font-size: 10px; letter-spacing: 2px;
+      text-transform: uppercase; padding: 4px 14px;
+      border: 1px solid var(--gold); color: var(--gold);
+    }
+    .mode-badge.soon { border-color: var(--muted); color: var(--muted); }
+
+    /* === GAME === */
+    .game-screen { display: none; flex-direction: column; min-height: 100vh; padding-top: 20px; position: relative; z-index: 1; }
+    .game-screen.active { display: flex; }
+    .home-screen.hidden { display: none; }
+
+    .g-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 28px;
+      padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .g-mode {
+      font-family: var(--serif); font-size: 12px; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--fg-dim);
+    }
+    .g-score {
+      font-family: var(--serif); font-size: 18px; color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* Progress - elegant line */
+    .prog-track {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 32px;
+    }
+    .prog-diamond {
+      width: 8px; height: 8px; transform: rotate(45deg);
+      border: 1px solid var(--muted); transition: all 0.5s ease;
+    }
+    .prog-diamond.done { background: var(--gold); border-color: var(--gold); }
+    .prog-diamond.now { border-color: var(--gold); box-shadow: 0 0 8px var(--gold-glow); }
+    .prog-hairline { flex: 1; height: 1px; background: var(--border); }
+
+    /* Clue */
+    .clue-frame {
+      padding: 28px 24px; margin-bottom: 24px;
+      border: 1px solid var(--border);
+      position: relative; animation: reveal 0.6s ease;
+    }
+    .clue-frame::before, .clue-frame::after {
+      content: ''; position: absolute; width: 12px; height: 12px;
+      border-color: var(--gold); border-style: solid;
+    }
+    .clue-frame::before {
+      top: -1px; left: -1px; border-width: 1px 0 0 1px;
+    }
+    .clue-frame::after {
+      bottom: -1px; right: -1px; border-width: 0 1px 1px 0;
+    }
+    .clue-num {
+      font-family: var(--serif); font-size: 11px; letter-spacing: 3px;
+      color: var(--gold); margin-bottom: 14px; text-transform: uppercase;
+    }
+    .clue-content {
+      font-family: var(--serif); font-size: 20px; font-weight: 400;
+      line-height: 1.7; color: var(--fg);
+    }
+
+    /* Temperature */
+    .temp-line {
+      display: none; align-items: center; gap: 16px;
+      padding: 12px 0; margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .temp-line.show { display: flex; }
+    .temp-gem {
+      width: 8px; height: 8px; transform: rotate(45deg);
+      transition: all 0.4s;
+    }
+    .temp-txt {
+      font-family: var(--serif); font-size: 13px; font-style: italic;
+      color: var(--fg-dim);
+    }
+
+    /* Input */
+    .input-zone { margin-top: auto; padding-bottom: 36px; }
+    .input-frame {
+      display: flex; align-items: center;
+      border: 1px solid var(--border); padding: 2px;
+      margin-bottom: 16px; transition: border-color 0.3s;
+    }
+    .input-frame:focus-within { border-color: var(--gold); }
+    .guess-input {
+      flex: 1; padding: 14px 16px; background: none; border: none;
+      font-family: var(--sans); font-size: 16px; font-weight: 300;
+      color: var(--fg); outline: none;
+    }
+    .guess-input::placeholder { color: var(--muted); }
+    .confirm-btn {
+      padding: 14px 24px; background: var(--gold); color: var(--bg);
+      border: none; font-family: var(--serif); font-size: 13px;
+      font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .confirm-btn:hover { opacity: 0.85; }
+    .pass-btn {
+      display: block; margin: 0 auto; font-size: 12px;
+      color: var(--muted); background: none; border: none;
+      cursor: pointer; font-family: var(--serif);
+      letter-spacing: 1px; font-style: italic;
+    }
+    .pass-btn:hover { color: var(--gold); }
+
+    /* Feedback */
+    .gold-toast {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      padding: 10px 24px; font-family: var(--serif); font-size: 14px;
+      z-index: 200; display: none; letter-spacing: 1px;
+      border: 1px solid;
+    }
+    .gold-toast.show { display: block; animation: toastIn 0.4s ease; }
+    .gold-toast.wrong { border-color: var(--danger); color: #CC7777; background: rgba(139,58,58,0.1); }
+    .gold-toast.correct { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+    /* Result */
+    .result-overlay {
+      display: none; position: fixed; inset: 0;
+      background: var(--bg); z-index: 100;
+      flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+      padding: 40px;
+    }
+    .result-overlay.show { display: flex; animation: fadeUp 0.6s ease; }
+    .result-emblem {
+      width: 64px; height: 64px; border: 1.5px solid var(--gold);
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 28px; margin-bottom: 24px;
+    }
+    .result-heading {
+      font-family: var(--serif); font-size: 28px; font-weight: 600;
+      margin-bottom: 6px; letter-spacing: 1px;
+    }
+    .result-target {
+      font-family: var(--serif); font-size: 16px; font-style: italic;
+      color: var(--fg-dim); margin-bottom: 32px;
+    }
+    .result-frame {
+      border: 1px solid var(--border); padding: 32px 48px;
+      position: relative; margin-bottom: 36px;
+    }
+    .result-frame::before, .result-frame::after {
+      content: ''; position: absolute; width: 10px; height: 10px;
+      border-color: var(--gold); border-style: solid;
+    }
+    .result-frame::before { top:-1px;left:-1px;border-width:1px 0 0 1px; }
+    .result-frame::after { bottom:-1px;right:-1px;border-width:0 1px 1px 0; }
+    .result-label {
+      font-family: var(--serif); font-size: 10px; letter-spacing: 4px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+    .result-number {
+      font-family: var(--serif); font-size: 56px; font-weight: 700;
+      color: var(--gold);
+    }
+    .result-stars { font-size: 18px; margin: 10px 0; color: var(--gold); letter-spacing: 6px; }
+    .result-note {
+      font-family: var(--serif); font-size: 12px; color: var(--muted);
+      font-style: italic;
+    }
+    .replay-btn {
+      padding: 14px 48px; background: none;
+      border: 1px solid var(--gold); color: var(--gold);
+      font-family: var(--serif); font-size: 13px; font-weight: 600;
+      letter-spacing: 3px; text-transform: uppercase;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .replay-btn:hover {
+      background: var(--gold); color: var(--bg);
+      box-shadow: 0 0 30px var(--gold-dim);
+    }
+
+    @keyframes reveal { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes toastIn { from{opacity:0;transform:translate(-50%,-8px)} to{opacity:1;transform:translate(-50%,0)} }
+    .shake { animation: shake 0.4s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+  </style>
+</head>
+<body>
+
+<div class="home-screen" id="homeScreen">
+  <div class="home-crest">♛</div>
+  <div class="home-title">猜猜TA是谁</div>
+  <div class="home-line"></div>
+  <div class="home-sub">
+    以线索为引，以智慧为刃。<br>
+    在名字揭晓之前，一切皆有可能。
+  </div>
+  <div class="mode-col">
+    <div class="mode-row" onclick="startGame()">
+      <div class="mode-icon">◆</div>
+      <div class="mode-info">
+        <div class="mode-name">渐进揭秘</div>
+        <div class="mode-desc">线索逐条出现，越早猜对越厉害</div>
+      </div>
+      <div class="mode-badge">进入</div>
+    </div>
+    <div class="mode-row" onclick="void(0)">
+      <div class="mode-icon">◆</div>
+      <div class="mode-info">
+        <div class="mode-name">二十问</div>
+        <div class="mode-desc">只问是非题，二十个问题内破案</div>
+      </div>
+      <div class="mode-badge soon">即将</div>
+    </div>
+    <div class="mode-row" onclick="void(0)">
+      <div class="mode-icon">◆</div>
+      <div class="mode-info">
+        <div class="mode-name">描述接龙</div>
+        <div class="mode-desc">三个关键词，猜出一个名字</div>
+      </div>
+      <div class="mode-badge soon">即将</div>
+    </div>
+  </div>
+</div>
+
+<div class="game-screen" id="gameScreen">
+  <div class="g-header">
+    <div class="g-mode">渐进揭秘</div>
+    <div class="g-score"><span id="scoreNum">0</span> 分</div>
+  </div>
+
+  <div class="prog-track" id="progTrack"></div>
+
+  <div class="clue-frame" id="clueFrame">
+    <div class="clue-num">线索 <span id="clueNum">I</span></div>
+    <div class="clue-content" id="clueText"></div>
+  </div>
+
+  <div class="temp-line" id="tempLine">
+    <div class="temp-gem" id="tempGem"></div>
+    <div class="temp-txt" id="tempTxt"></div>
+  </div>
+
+  <div class="input-zone">
+    <div class="input-frame">
+      <input class="guess-input" id="guessInput" placeholder="写下你的答案" autocomplete="off">
+      <button class="confirm-btn" onclick="submitGuess()">确认</button>
+    </div>
+    <button class="pass-btn" onclick="nextClue()">跳过此线索 →</button>
+  </div>
+</div>
+
+<div class="gold-toast" id="goldToast"></div>
+
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-emblem" id="resultEmblem">♛</div>
+  <div class="result-heading" id="resultHeading"></div>
+  <div class="result-target" id="resultTarget"></div>
+  <div class="result-frame">
+    <div class="result-label">得分</div>
+    <div class="result-number" id="resultNumber">0</div>
+    <div class="result-stars" id="resultStars"></div>
+    <div class="result-note" id="resultNote"></div>
+  </div>
+  <button class="replay-btn" onclick="resetGame()">再来一局</button>
+</div>
+
+<script>
+const Q=[
+  {name:"诸葛亮",aliases:["孔明","卧龙","诸葛孔明"],clues:["这是一位中国古代的政治家","他活跃在东汉末年到三国时期","他是一位著名的军事谋略家","他被三顾茅庐请出山","他的标志性形象是手持羽扇、头戴纶巾","他写了一篇著名的出师表","他的名字中有一个"亮"字","他的姓氏是一个复姓"]},
+  {name:"灭霸",aliases:["Thanos","萨诺斯","紫薯"],clues:["这是一个虚构角色","他来自一部超级英雄电影","他是漫威宇宙的角色","他是一个反派，但自认为在拯救宇宙","他戴着一只金色手套，上面有六颗宝石","他打了一个响指，消灭了一半生命","他的皮肤是紫色的","他的名字在希腊语中意为"死亡""]},
+  {name:"周杰伦",aliases:["Jay Chou","杰伦","周董","小公举"],clues:["这是一位华语音乐人","他来自中国台湾","他被称为"亚洲流行天王"","他的音乐风格融合了中国风和R&B","他有一首歌叫《青花瓷》","他的口头禅是"哎呦不错哦"","他娶了一位模特叫昆凌","他的姓氏是一个朝代名"]}
+];
+const R=['I','II','III','IV','V','VI','VII','VIII'];
+let cur,idx,score;const m=[8,7,6,5,4,3,2,1];
+
+function startGame(){
+  document.getElementById('homeScreen').classList.add('hidden');
+  const g=document.getElementById('gameScreen');g.classList.add('active');g.style.display='flex';
+  cur=Q[Math.floor(Math.random()*Q.length)];idx=0;score=0;render();
+}
+
+function render(){
+  const pt=document.getElementById('progTrack');pt.innerHTML='';
+  for(let i=0;i<8;i++){
+    const d=document.createElement('div');d.className='prog-diamond'+(i<idx?' done':'')+(i===idx?' now':'');pt.appendChild(d);
+    if(i<7){const h=document.createElement('div');h.className='prog-hairline';pt.appendChild(h);}
+  }
+  const cf=document.getElementById('clueFrame');cf.style.animation='none';cf.offsetHeight;cf.style.animation='reveal 0.6s ease';
+  document.getElementById('clueNum').textContent=R[idx];
+  document.getElementById('clueText').textContent=cur.clues[idx];
+  document.getElementById('scoreNum').textContent=score;
+}
+
+function nextClue(){if(idx>=7)return;idx++;render();document.getElementById('guessInput').value='';document.getElementById('tempLine').classList.remove('show');}
+
+function submitGuess(){
+  const v=document.getElementById('guessInput').value.trim();if(!v)return;
+  const n=v.toLowerCase().replace(/\s/g,'');
+  const ok=n===cur.name.toLowerCase().replace(/\s/g,'')||cur.aliases.some(a=>n===a.toLowerCase().replace(/\s/g,''));
+  if(ok){score+=Math.round(100*m[idx]*1.5);toast('correct','✦ 精准命中');setTimeout(()=>showResult(true),700);}
+  else{document.getElementById('clueFrame').classList.add('shake');setTimeout(()=>document.getElementById('clueFrame').classList.remove('shake'),400);toast('wrong','✕ 并非此人');showTemp();if(idx<7)nextClue();else showResult(false);}
+  document.getElementById('scoreNum').textContent=score;
+}
+
+function toast(cls,msg){const t=document.getElementById('goldToast');t.className='gold-toast show '+cls;t.textContent=msg;setTimeout(()=>t.classList.remove('show'),1200);}
+
+function showTemp(){
+  const l=document.getElementById('tempLine');l.classList.add('show');
+  const gem=document.getElementById('tempGem');
+  const txt=document.getElementById('tempTxt');
+  const levels=[
+    {c:'#5A8F6A',t:'相距甚远'},
+    {c:'#7A9F6A',t:'略有眉目'},
+    {c:'#C9A84C',t:'渐入佳境'},
+    {c:'#CC8844',t:'呼之欲出'},
+    {c:'#CC5555',t:'触手可及'},
+  ];
+  const lv=levels[Math.min(idx,4)];
+  gem.style.background=lv.c;gem.style.boxShadow=`0 0 8px ${lv.c}`;
+  txt.textContent=lv.t;txt.style.color=lv.c;
+}
+
+function showResult(ok){
+  const o=document.getElementById('resultOverlay');o.classList.add('show');
+  document.getElementById('resultEmblem').textContent=ok?'✦':'○';
+  document.getElementById('resultHeading').textContent=ok?'精准揭晓':'答案浮现';
+  document.getElementById('resultTarget').textContent=cur.name;
+  if(!ok)score=50;
+  document.getElementById('resultNumber').textContent=score;
+  document.getElementById('resultStars').textContent='✦'.repeat(ok?Math.max(1,5-idx):1);
+  document.getElementById('resultNote').textContent=`第${idx+1}条线索 · 难度 ×1.5`;
+}
+
+function resetGame(){document.getElementById('resultOverlay').classList.remove('show');document.getElementById('tempLine').classList.remove('show');cur=Q[Math.floor(Math.random()*Q.length)];idx=0;score=0;render();}
+
+document.getElementById('guessInput').addEventListener('keydown',e=>{if(e.key==='Enter')submitGuess();});
+</script>
+</body>
+</html>
