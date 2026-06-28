@@ -1,0 +1,99 @@
+/* === 暗黑破坏神设计系统 === */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=MedievalSharp&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+:root {
+  /* 基础色 */
+  --diablo-bg: #0B0806;
+  --diablo-bg-deep: #060403;
+  --diablo-stone: #1A1510;
+  --diablo-stone-light: #231E17;
+  --diablo-stone-border: #2E2820;
+
+  /* 金色系 */
+  --diablo-gold: #C8A84E;
+  --diablo-gold-bright: #E8C85A;
+  --diablo-gold-dim: #8A7234;
+  --diablo-gold-glow: rgba(200,168,78,0.35);
+
+  /* 血红系 */
+  --diablo-blood: #8B1A1A;
+  --diablo-blood-bright: #C42B2B;
+  --diablo-blood-glow: rgba(196,43,43,0.3);
+
+  /* 文字 */
+  --diablo-fg: #D4C8A8;
+  --diablo-fg-bright: #EDE4C8;
+  --diablo-muted: #7A6E58;
+
+  /* 功能色 */
+  --diablo-rune: #4A6A4A;
+  --diablo-rune-glow: rgba(74,106,74,0.4);
+
+  /* 字体 */
+  --font-cinzel: 'Cinzel', 'Noto Serif SC', Georgia, serif;
+  --font-gothic: 'MedievalSharp', 'Noto Serif SC', cursive;
+  --font-sans: 'Noto Sans SC', -apple-system, sans-serif;
+
+  /* 圆角 & 间距 */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+}
+
+/* 全局重置 */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--diablo-bg);
+  color: var(--diablo-fg);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 暗角效果 */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+}
+
+/* 环境光 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(139,26,26,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 0%, rgba(200,168,78,0.03) 0%, transparent 50%);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--diablo-bg); }
+::-webkit-scrollbar-thumb { background: var(--diablo-stone-border); }
+
+/* 选择文字颜色 */
+::selection {
+  background: var(--diablo-gold-dim);
+  color: var(--diablo-fg-bright);
+}
+
+/* 输入框聚焦 */
+input:focus { outline: none; }
+button { cursor: pointer; font-family: inherit; }
+a { color: var(--diablo-gold); text-decoration: none; }
