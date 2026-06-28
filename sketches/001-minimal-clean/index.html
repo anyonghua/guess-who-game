@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>猜猜TA是谁 · 极简风</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #FAFAFA;
+      --fg: #1A1A1A;
+      --muted: #999;
+      --accent: #2563EB;
+      --accent-light: #EFF6FF;
+      --success: #16A34A;
+      --danger: #DC2626;
+      --border: #E5E7EB;
+      --card-bg: #FFFFFF;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 0 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .header .mode {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .header .score {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* Progress */
+    .progress-bar {
+      display: flex;
+      gap: 6px;
+      margin: 24px 0 8px;
+    }
+    .progress-dot {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      transition: background 0.4s ease;
+    }
+    .progress-dot.active { background: var(--accent); }
+    .progress-dot.used { background: #CBD5E1; }
+    .clue-count {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+      margin-bottom: 20px;
+    }
+
+    /* Clue Card */
+    .clue-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+      animation: slideUp 0.4s ease;
+    }
+    .clue-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .clue-text {
+      font-size: 20px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--fg);
+    }
+
+    /* Temperature */
+    .temp-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+    }
+    .temp-icon { font-size: 20px; }
+    .temp-label { font-size: 13px; color: var(--muted); }
+    .temp-value { font-size: 13px; font-weight: 600; margin-left: auto; }
+    .temp-cold { color: #3B82F6; }
+    .temp-cool { color: #06B6D4; }
+    .temp-warm { color: #F59E0B; }
+    .temp-hot { color: #EF4444; }
+
+    /* Input */
+    .guess-section { margin-top: auto; padding-bottom: 32px; }
+    .guess-input-wrap {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .guess-input {
+      flex: 1;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: var(--card-bg);
+    }
+    .guess-input:focus { border-color: var(--accent); }
+    .guess-input::placeholder { color: #C4C4C4; }
+    .guess-btn {
+      padding: 14px 24px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .guess-btn:hover { opacity: 0.9; }
+    .guess-btn:active { transform: scale(0.98); }
+
+    /* Actions */
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+    }
+    .action-btn {
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--border);
+      transition: color 0.2s;
+    }
+    .action-btn:hover { color: var(--accent); }
+
+    /* Result overlay */
+    .result-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+      animation: fadeIn 0.3s ease;
+    }
+    .result-overlay.show { display: flex; }
+    .result-emoji { font-size: 64px; margin-bottom: 16px; }
+    .result-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .result-answer { font-size: 18px; color: var(--muted); margin-bottom: 24px; }
+    .result-score-box {
+      background: var(--accent-light);
+      border-radius: 16px;
+      padding: 24px 40px;
+      margin-bottom: 32px;
+    }
+    .result-score-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .result-score-num { font-size: 48px; font-weight: 800; color: var(--accent); }
+    .result-stars { font-size: 24px; margin-bottom: 8px; }
+    .result-breakdown { font-size: 13px; color: var(--muted); }
+    .play-again-btn {
+      padding: 16px 48px;
+      background: var(--fg);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .play-again-btn:hover { opacity: 0.85; }
+
+    /* Wrong guess shake */
+    .shake { animation: shake 0.4s ease; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Home screen */
+    .home-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    .home-title { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+    .home-sub { font-size: 15px; color: var(--muted); margin-bottom: 40px; }
+    .mode-select { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+    .mode-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .mode-card:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+    .mode-card .mode-icon { font-size: 24px; margin-bottom: 8px; }
+    .mode-card .mode-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .mode-card .mode-desc { font-size: 13px; color: var(--muted); }
+
+    .game-screen { display: none; min-height: 100vh; display: none; flex-direction: column; }
+    .game-screen.active { display: flex; }
+    .home-screen.hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Home Screen -->
+<div class="home-screen" id="homeScreen">
+  <div style="font-size: 48px; margin-bottom: 16px;">🎭</div>
+  <div class="home-title">猜猜TA是谁</div>
+  <div class="home-sub">选一种模式开始</div>
+  <div class="mode-select">
+    <div class="mode-card" onclick="startGame('progressive')">
+      <div class="mode-icon">🔦</div>
+      <div class="mode-name">渐进揭秘</div>
+      <div class="mode-desc">线索逐条出现，越早猜对越厉害</div>
+    </div>
+    <div class="mode-card" onclick="alert('二十问模式 - 开发中')">
+      <div class="mode-icon">❓</div>
+      <div class="mode-name">二十问</div>
+      <div class="mode-desc">只问是非题，20个问题内破案</div>
+    </div>
+    <div class="mode-card" onclick="alert('描述接龙 - 开发中')">
+      <div class="mode-icon">🤝</div>
+      <div class="mode-name">描述接龙</div>
+      <div class="mode-desc">3个关键词猜人名</div>
+    </div>
+  </div>
+</div>
+
+<!-- Game Screen -->
+<div class="game-screen" id="gameScreen">
+  <div class="header">
+    <div class="mode">🔦 渐进揭秘</div>
+    <div class="score">得分：<span id="scoreNum">0</span></div>
+  </div>
+
+  <div class="progress-bar" id="progressBar"></div>
+  <div class="clue-count">第 <span id="clueNum">1</span> / 8 条线索</div>
+
+  <div class="clue-card" id="clueCard">
+    <div class="clue-label">线索</div>
+    <div class="clue-text" id="clueText"></div>
+  </div>
+
+  <div class="temp-bar" id="tempBar" style="display:none;">
+    <span class="temp-icon" id="tempIcon">🌡️</span>
+    <span class="temp-label" id="tempLabel"></span>
+    <span class="temp-value" id="tempValue"></span>
+  </div>
+
+  <div class="guess-section">
+    <div class="guess-input-wrap">
+      <input type="text" class="guess-input" id="guessInput" placeholder="输入人名..." autocomplete="off">
+      <button class="guess-btn" onclick="submitGuess()">猜！</button>
+    </div>
+    <div class="actions">
+      <button class="action-btn" onclick="nextClue()">再给条线索 ↓</button>
+    </div>
+  </div>
+</div>
+
+<!-- Result Overlay -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-emoji" id="resultEmoji">🎉</div>
+  <div class="result-title" id="resultTitle">猜对了！</div>
+  <div class="result-answer" id="resultAnswer">答案是：诸葛亮</div>
+  <div class="result-score-box">
+    <div class="result-score-label">得分</div>
+    <div class="result-score-num" id="resultScore">480</div>
+    <div class="result-stars" id="resultStars">⭐⭐⭐⭐</div>
+    <div class="result-breakdown" id="resultBreakdown">第4条线索猜对 × 1.5倍难度</div>
+  </div>
+  <button class="play-again-btn" onclick="resetGame()">再来一局</button>
+</div>
+
+<script>
+  // Sample questions
+  const questions = [
+    {
+      name: "诸葛亮", aliases: ["孔明", "卧龙", "诸葛孔明"],
+      clues: [
+        "这是一位中国古代的政治家",
+        "他活跃在东汉末年到三国时期",
+        "他是一位著名的军事谋略家",
+        "他被三顾茅庐请出山",
+        "他的标志性形象是手持羽扇、头戴纶巾",
+        "他写了一篇著名的出师表",
+        "他的名字中有一个"亮"字",
+        "他的姓氏是一个复姓"
+      ]
+    },
+    {
+      name: "灭霸", aliases: ["Thanos", "萨诺斯", "紫薯"],
+      clues: [
+        "这是一个虚构角色",
+        "他来自一部超级英雄电影",
+        "他是漫威宇宙的角色",
+        "他是一个反派，但自认为在拯救宇宙",
+        "他戴着一只金色手套，上面有六颗宝石",
+        "他打了一个响指，消灭了一半生命",
+        "他的皮肤是紫色的",
+        "他的名字在希腊语中意为"死亡""
+      ]
+    },
+    {
+      name: "周杰伦", aliases: ["Jay Chou", "杰伦", "周董", "小公举"],
+      clues: [
+        "这是一位华语音乐人",
+        "他来自中国台湾",
+        "他被称为"亚洲流行天王"",
+        "他的音乐风格融合了中国风和R&B",
+        "他有一首歌叫《青花瓷》",
+        "他的口头禅是"哎呦不错哦"",
+        "他娶了一位模特叫昆凌",
+        "他的姓氏是一个朝代名"
+      ]
+    }
+  ];
+
+  let currentQ = null;
+  let clueIndex = 0;
+  let score = 0;
+  let guessCount = 0;
+  const multipliers = [8, 7, 6, 5, 4, 3, 2, 1];
+
+  function startGame(mode) {
+    document.getElementById('homeScreen').classList.add('hidden');
+    const gs = document.getElementById('gameScreen');
+    gs.classList.add('active');
+    gs.style.display = 'flex';
+    currentQ = questions[Math.floor(Math.random() * questions.length)];
+    clueIndex = 0;
+    score = 0;
+    guessCount = 0;
+    renderProgress();
+    showClue();
+  }
+
+  function renderProgress() {
+    const bar = document.getElementById('progressBar');
+    bar.innerHTML = '';
+    for (let i = 0; i < 8; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'progress-dot' + (i < clueIndex ? ' active' : '') + (i === clueIndex ? ' active' : '');
+      if (i <= clueIndex) dot.classList.add('active');
+      bar.appendChild(dot);
+    }
+    document.getElementById('clueNum').textContent = clueIndex + 1;
+  }
+
+  function showClue() {
+    const card = document.getElementById('clueCard');
+    card.style.animation = 'none';
+    card.offsetHeight; // reflow
+    card.style.animation = 'slideUp 0.4s ease';
+    document.getElementById('clueText').textContent = currentQ.clues[clueIndex];
+  }
+
+  function nextClue() {
+    if (clueIndex >= 7) return;
+    clueIndex++;
+    renderProgress();
+    showClue();
+    document.getElementById('guessInput').value = '';
+  }
+
+  function submitGuess() {
+    const input = document.getElementById('guessInput').value.trim();
+    if (!input) return;
+    guessCount++;
+
+    const normalized = input.toLowerCase().replace(/\s/g, '');
+    const nameMatch = normalized === currentQ.name.toLowerCase().replace(/\s/g, '');
+    const aliasMatch = currentQ.aliases.some(a => normalized === a.toLowerCase().replace(/\s/g, ''));
+
+    if (nameMatch || aliasMatch) {
+      // Correct!
+      score = 100 * multipliers[clueIndex] * 1.5;
+      showResult(true);
+    } else {
+      // Wrong - shake + temperature
+      const card = document.getElementById('clueCard');
+      card.classList.add('shake');
+      setTimeout(() => card.classList.remove('shake'), 400);
+      showTemperature(input);
+      if (clueIndex < 7) nextClue();
+      else showResult(false);
+    }
+  }
+
+  function showTemperature(guess) {
+    const bar = document.getElementById('tempBar');
+    bar.style.display = 'flex';
+    const temps = [
+      { label: '冰凉', icon: '🥶', cls: 'temp-cold', val: '方向完全不同' },
+      { label: '微凉', icon: '😐', cls: 'temp-cool', val: '有点接近了' },
+      { label: '温热', icon: '🤔', cls: 'temp-warm', val: '方向对了！' },
+      { label: '滚烫', icon: '🔥', cls: 'temp-hot', val: '非常接近！' },
+    ];
+    const t = temps[Math.min(clueIndex, 3)];
+    document.getElementById('tempIcon').textContent = t.icon;
+    document.getElementById('tempLabel').textContent = `温度：${t.label}`;
+    const val = document.getElementById('tempValue');
+    val.textContent = t.val;
+    val.className = 'temp-value ' + t.cls;
+  }
+
+  function showResult(correct) {
+    const overlay = document.getElementById('resultOverlay');
+    overlay.classList.add('show');
+    if (correct) {
+      document.getElementById('resultEmoji').textContent = '🎉';
+      document.getElementById('resultTitle').textContent = '猜对了！';
+    } else {
+      document.getElementById('resultEmoji').textContent = '😅';
+      document.getElementById('resultTitle').textContent = '没猜到...';
+      score = 50;
+    }
+    document.getElementById('resultAnswer').textContent = `答案是：${currentQ.name}`;
+    document.getElementById('resultScore').textContent = Math.round(score);
+    const stars = correct ? Math.max(1, 5 - clueIndex) : 1;
+    document.getElementById('resultStars').textContent = '⭐'.repeat(stars);
+    document.getElementById('resultBreakdown').textContent =
+      `第${clueIndex + 1}条线索${correct ? '猜对' : '才揭示答案'} × 1.5倍难度`;
+  }
+
+  function resetGame() {
+    document.getElementById('resultOverlay').classList.remove('show');
+    document.getElementById('tempBar').style.display = 'none';
+    document.getElementById('guessInput').value = '';
+    currentQ = questions[Math.floor(Math.random() * questions.length)];
+    clueIndex = 0; score = 0; guessCount = 0;
+    renderProgress(); showClue();
+  }
+
+  // Enter key to submit
+  document.getElementById('guessInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitGuess();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>猜猜TA是谁 · 游戏风</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0F172A;
+      --surface: #1E293B;
+      --surface-light: #334155;
+      --fg: #F8FAFC;
+      --muted: #94A3B8;
+      --accent: #F59E0B;
+      --accent-glow: rgba(245,158,11,0.3);
+      --success: #22C55E;
+      --danger: #EF4444;
+      --purple: #A855F7;
+      --cyan: #06B6D4;
+      --radius: 16px;
+    }
+    body {
+      font-family: 'Noto Sans SC', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 0 16px;
+      overflow-x: hidden;
+    }
+
+    /* Home */
+    .home-screen {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100vh; text-align: center;
+    }
+    .home-mascot { font-size: 80px; margin-bottom: 16px; animation: bounce 2s infinite; }
+    .home-title {
+      font-size: 36px; font-weight: 800;
+      background: linear-gradient(135deg, #F59E0B, #EF4444, #A855F7);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .home-sub { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
+    .mode-grid { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+    .mode-card {
+      background: var(--surface);
+      border: 2px solid transparent;
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: left; cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative; overflow: hidden;
+    }
+    .mode-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, transparent 50%, rgba(245,158,11,0.05));
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .mode-card:hover { border-color: var(--accent); transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .mode-card:hover::before { opacity: 1; }
+    .mode-card .mode-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .mode-card .mode-icon { font-size: 28px; }
+    .mode-card .mode-name { font-size: 18px; font-weight: 700; }
+    .mode-card .mode-badge {
+      margin-left: auto; font-size: 10px; padding: 3px 8px;
+      border-radius: 20px; background: var(--accent); color: var(--bg);
+      font-weight: 700;
+    }
+    .mode-card .mode-desc { font-size: 13px; color: var(--muted); }
+
+    /* Game Screen */
+    .game-screen { display: none; flex-direction: column; min-height: 100vh; padding-top: 12px; }
+    .game-screen.active { display: flex; }
+    .home-screen.hidden { display: none; }
+
+    /* Top bar */
+    .top-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px;
+    }
+    .streak-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface); padding: 6px 14px; border-radius: 20px;
+      font-size: 14px; font-weight: 700;
+    }
+    .streak-fire { animation: flicker 0.5s infinite alternate; }
+    .score-display {
+      font-size: 24px; font-weight: 800; color: var(--accent);
+      text-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    /* Progress */
+    .clue-track {
+      display: flex; gap: 4px; margin-bottom: 20px;
+    }
+    .clue-bar {
+      flex: 1; height: 6px; border-radius: 3px;
+      background: var(--surface-light); transition: all 0.4s ease;
+    }
+    .clue-bar.lit { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+    .clue-bar.current {
+      background: var(--accent);
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Clue Card */
+    .clue-card {
+      background: linear-gradient(145deg, var(--surface), var(--surface-light));
+      border-radius: 20px; padding: 28px 24px;
+      border: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 20px;
+      animation: cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+    }
+    .clue-number {
+      position: absolute; top: -12px; right: 20px;
+      background: var(--accent); color: var(--bg);
+      font-size: 13px; font-weight: 800;
+      padding: 4px 12px; border-radius: 20px;
+    }
+    .clue-emoji { font-size: 32px; margin-bottom: 12px; }
+    .clue-text { font-size: 18px; font-weight: 600; line-height: 1.6; }
+
+    /* Guess attempts left */
+    .attempts {
+      display: flex; gap: 8px; justify-content: center; margin-bottom: 16px;
+    }
+    .attempt-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--surface-light); transition: background 0.3s;
+    }
+    .attempt-dot.used { background: var(--danger); }
+    .attempt-dot.saved { background: var(--success); }
+
+    /* Input */
+    .input-area { margin-top: auto; padding-bottom: 24px; }
+    .guess-wrap {
+      display: flex; gap: 10px; margin-bottom: 12px;
+    }
+    .guess-input {
+      flex: 1; padding: 16px 18px;
+      background: var(--surface); border: 2px solid var(--surface-light);
+      border-radius: 14px; font-size: 17px; color: var(--fg);
+      outline: none; transition: border-color 0.3s;
+    }
+    .guess-input:focus { border-color: var(--accent); }
+    .guess-input::placeholder { color: var(--muted); }
+    .guess-btn {
+      padding: 16px 28px; border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 800; cursor: pointer;
+      background: linear-gradient(135deg, #F59E0B, #EF4444);
+      color: #fff; transition: transform 0.15s, box-shadow 0.3s;
+      box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+    }
+    .guess-btn:active { transform: scale(0.95); }
+    .action-row {
+      display: flex; justify-content: center; gap: 20px;
+    }
+    .action-link {
+      font-size: 13px; color: var(--muted); cursor: pointer;
+      background: none; border: none; text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .action-link:hover { color: var(--accent); }
+
+    /* Feedback */
+    .feedback-toast {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      padding: 12px 24px; border-radius: 12px;
+      font-size: 15px; font-weight: 700;
+      z-index: 200; animation: toastIn 0.4s ease;
+      display: none;
+    }
+    .feedback-toast.show { display: block; }
+    .feedback-toast.wrong {
+      background: var(--danger); color: #fff;
+      box-shadow: 0 4px 20px rgba(239,68,68,0.4);
+    }
+    .feedback-toast.correct {
+      background: var(--success); color: #fff;
+      box-shadow: 0 4px 20px rgba(34,197,94,0.4);
+    }
+
+    /* Temperature */
+    .temp-indicator {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-radius: 12px;
+      background: var(--surface); margin-bottom: 16px;
+    }
+    .temp-thermo { font-size: 24px; }
+    .temp-text { font-size: 14px; font-weight: 600; }
+    .temp-dots { margin-left: auto; display: flex; gap: 4px; }
+    .temp-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--surface-light);
+    }
+    .temp-dot.hot { background: #EF4444; box-shadow: 0 0 6px #EF4444; }
+    .temp-dot.warm { background: #F59E0B; }
+    .temp-dot.cool { background: #06B6D4; }
+
+    /* Result */
+    .result-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15,23,42,0.95); backdrop-filter: blur(20px);
+      z-index: 100; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; padding: 40px;
+    }
+    .result-overlay.show { display: flex; animation: fadeIn 0.4s ease; }
+    .result-emoji { font-size: 72px; margin-bottom: 12px; animation: bounce 1s; }
+    .result-title {
+      font-size: 32px; font-weight: 800; margin-bottom: 8px;
+      background: linear-gradient(135deg, #F59E0B, #22C55E);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .result-name { font-size: 18px; color: var(--muted); margin-bottom: 28px; }
+    .result-score-card {
+      background: var(--surface); border-radius: 20px;
+      padding: 28px 44px; margin-bottom: 32px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .result-score-num {
+      font-size: 56px; font-weight: 800; color: var(--accent);
+      text-shadow: 0 0 30px var(--accent-glow);
+    }
+    .result-stars { font-size: 28px; margin: 8px 0; }
+    .result-detail { font-size: 13px; color: var(--muted); }
+    .play-again-btn {
+      padding: 16px 52px; border: none; border-radius: 16px;
+      font-size: 17px; font-weight: 800; cursor: pointer;
+      background: linear-gradient(135deg, #F59E0B, #EF4444);
+      color: #fff; box-shadow: 0 4px 20px rgba(245,158,11,0.3);
+      transition: transform 0.15s;
+    }
+    .play-again-btn:active { transform: scale(0.95); }
+
+    /* Animations */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+    }
+    @keyframes flicker {
+      from { opacity: 0.8; } to { opacity: 1; }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .shake { animation: shake 0.4s ease; }
+  </style>
+</head>
+<body>
+
+<!-- Home -->
+<div class="home-screen" id="homeScreen">
+  <div class="home-mascot">🎭</div>
+  <div class="home-title">猜猜TA是谁</div>
+  <div class="home-sub">挑战你的知识边界</div>
+  <div class="mode-grid">
+    <div class="mode-card" onclick="startGame()">
+      <div class="mode-top">
+        <span class="mode-icon">🔦</span>
+        <span class="mode-name">渐进揭秘</span>
+        <span class="mode-badge">可玩</span>
+      </div>
+      <div class="mode-desc">线索逐条出现，越早猜对越厉害</div>
+    </div>
+    <div class="mode-card" onclick="alert('❓ 二十问模式 - 即将推出')">
+      <div class="mode-top">
+        <span class="mode-icon">❓</span>
+        <span class="mode-name">二十问</span>
+        <span class="mode-badge" style="background:var(--surface-light);color:var(--muted)">即将</span>
+      </div>
+      <div class="mode-desc">只问是非题，20个问题内破案</div>
+    </div>
+    <div class="mode-card" onclick="alert('🤝 描述接龙 - 即将推出')">
+      <div class="mode-top">
+        <span class="mode-icon">🤝</span>
+        <span class="mode-name">描述接龙</span>
+        <span class="mode-badge" style="background:var(--surface-light);color:var(--muted)">即将</span>
+      </div>
+      <div class="mode-desc">3个关键词猜人名</div>
+    </div>
+  </div>
+</div>
+
+<!-- Game -->
+<div class="game-screen" id="gameScreen">
+  <div class="top-bar">
+    <div class="streak-badge">
+      <span class="streak-fire">🔥</span>
+      连击 <span id="streakNum">0</span>
+    </div>
+    <div class="score-display"><span id="scoreNum">0</span></div>
+  </div>
+
+  <div class="clue-track" id="clueTrack"></div>
+
+  <div class="clue-card" id="clueCard">
+    <div class="clue-number" id="clueNumber">#1</div>
+    <div class="clue-emoji" id="clueEmoji">🔍</div>
+    <div class="clue-text" id="clueText"></div>
+  </div>
+
+  <div class="temp-indicator" id="tempIndicator" style="display:none;">
+    <span class="temp-thermo" id="tempThermo">🌡️</span>
+    <span class="temp-text" id="tempText"></span>
+    <div class="temp-dots" id="tempDots"></div>
+  </div>
+
+  <div class="attempts" id="attempts"></div>
+
+  <div class="input-area">
+    <div class="guess-wrap">
+      <input type="text" class="guess-input" id="guessInput" placeholder="你猜是谁？" autocomplete="off">
+      <button class="guess-btn" onclick="submitGuess()">猜！</button>
+    </div>
+    <div class="action-row">
+      <button class="action-link" onclick="nextClue()">跳过，给下一条线索</button>
+    </div>
+  </div>
+</div>
+
+<div class="feedback-toast" id="feedbackToast"></div>
+
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-emoji" id="resultEmoji">🎉</div>
+  <div class="result-title" id="resultTitle">太厉害了！</div>
+  <div class="result-name" id="resultName"></div>
+  <div class="result-score-card">
+    <div class="result-score-num" id="resultScore">0</div>
+    <div class="result-stars" id="resultStars"></div>
+    <div class="result-detail" id="resultDetail"></div>
+  </div>
+  <button class="play-again-btn" onclick="resetGame()">再来一局 🚀</button>
+</div>
+
+<script>
+const questions = [
+  { name:"诸葛亮", aliases:["孔明","卧龙","诸葛孔明"],
+    clues:["这是一位中国古代的政治家","他活跃在东汉末年到三国时期","他是一位著名的军事谋略家","他被三顾茅庐请出山","他的标志性形象是手持羽扇、头戴纶巾","他写了一篇著名的出师表","他的名字中有一个"亮"字","他的姓氏是一个复姓"],
+    emoji:["🏛️","⚔️","🧠","🚪","🪶","📜","💡","👥"] },
+  { name:"灭霸", aliases:["Thanos","萨诺斯","紫薯"],
+    clues:["这是一个虚构角色","他来自一部超级英雄电影","他是漫威宇宙的角色","他是一个反派，但自认为在拯救宇宙","他戴着一只金色手套，上面有六颗宝石","他打了一个响指，消灭了一半生命","他的皮肤是紫色的","他的名字在希腊语中意为"死亡""],
+    emoji:["🎭","🎬","🦸","😈","🧤","👋","🟣","💀"] },
+  { name:"周杰伦", aliases:["Jay Chou","杰伦","周董","小公举"],
+    clues:["这是一位华语音乐人","他来自中国台湾","他被称为"亚洲流行天王"","他的音乐风格融合了中国风和R&B","他有一首歌叫《青花瓷》","他的口头禅是"哎呦不错哦"","他娶了一位模特叫昆凌","他的姓氏是一个朝代名"],
+    emoji:["🎵","🏝️","👑","🎸","🏺","😎","💍","📅"] }
+];
+
+let currentQ, clueIdx, score, streak;
+const mult = [8,7,6,5,4,3,2,1];
+
+function startGame() {
+  document.getElementById('homeScreen').classList.add('hidden');
+  const gs = document.getElementById('gameScreen');
+  gs.classList.add('active'); gs.style.display = 'flex';
+  currentQ = questions[Math.floor(Math.random()*questions.length)];
+  clueIdx = 0; score = 0; streak = 0;
+  renderAll();
+}
+
+function renderAll() {
+  renderTrack(); renderClue(); renderAttempts();
+  document.getElementById('scoreNum').textContent = Math.round(score);
+  document.getElementById('streakNum').textContent = streak;
+}
+
+function renderTrack() {
+  const t = document.getElementById('clueTrack');
+  t.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    const d = document.createElement('div');
+    d.className = 'clue-bar' + (i < clueIdx ? ' lit' : '') + (i === clueIdx ? ' current' : '');
+    t.appendChild(d);
+  }
+}
+
+function renderClue() {
+  const card = document.getElementById('clueCard');
+  card.style.animation = 'none'; card.offsetHeight;
+  card.style.animation = 'cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+  document.getElementById('clueNumber').textContent = `#${clueIdx+1}`;
+  document.getElementById('clueEmoji').textContent = currentQ.emoji[clueIdx];
+  document.getElementById('clueText').textContent = currentQ.clues[clueIdx];
+}
+
+function renderAttempts() {
+  const a = document.getElementById('attempts');
+  a.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const d = document.createElement('div');
+    d.className = 'attempt-dot';
+    a.appendChild(d);
+  }
+}
+
+function nextClue() {
+  if (clueIdx >= 7) return;
+  clueIdx++; renderAll();
+  document.getElementById('guessInput').value = '';
+  document.getElementById('tempIndicator').style.display = 'none';
+}
+
+function submitGuess() {
+  const val = document.getElementById('guessInput').value.trim();
+  if (!val) return;
+  const n = val.toLowerCase().replace(/\s/g,'');
+  const ok = n === currentQ.name.toLowerCase().replace(/\s/g,'') ||
+    currentQ.aliases.some(a => n === a.toLowerCase().replace(/\s/g,''));
+
+  if (ok) {
+    score += 100 * mult[clueIdx] * 1.5;
+    streak++;
+    showFeedback('correct', `🎉 猜对了！+${Math.round(100*mult[clueIdx]*1.5)}`);
+    setTimeout(() => showResult(true), 800);
+  } else {
+    streak = 0;
+    const card = document.getElementById('clueCard');
+    card.classList.add('shake');
+    setTimeout(() => card.classList.remove('shake'), 400);
+    showFeedback('wrong', '❌ 不对哦，再想想！');
+    showTemp();
+    if (clueIdx < 7) nextClue();
+    else showResult(false);
+  }
+  renderAll();
+}
+
+function showFeedback(type, msg) {
+  const t = document.getElementById('feedbackToast');
+  t.textContent = msg; t.className = 'feedback-toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+function showTemp() {
+  const ind = document.getElementById('tempIndicator');
+  ind.style.display = 'flex';
+  const levels = [
+    { thermo:'🥶', text:'冰凉', dots:[0,0,0,0,0] },
+    { thermo:'😐', text:'微凉', dots:[1,0,0,0,0] },
+    { thermo:'🤔', text:'温热', dots:[1,1,1,0,0] },
+    { thermo:'🔥', text:'滚烫', dots:[1,1,1,1,0] },
+    { thermo:'💥', text:'沸腾', dots:[1,1,1,1,1] },
+  ];
+  const l = levels[Math.min(clueIdx, 4)];
+  document.getElementById('tempThermo').textContent = l.thermo;
+  document.getElementById('tempText').textContent = l.text;
+  const dd = document.getElementById('tempDots');
+  dd.innerHTML = '';
+  l.dots.forEach(v => {
+    const d = document.createElement('div');
+    d.className = 'temp-dot' + (v ? (l.dots.filter(x=>x).length>=4?' hot':' warm') : '');
+    dd.appendChild(d);
+  });
+}
+
+function showResult(correct) {
+  const o = document.getElementById('resultOverlay');
+  o.classList.add('show');
+  document.getElementById('resultEmoji').textContent = correct ? '🎉' : '😢';
+  document.getElementById('resultTitle').textContent = correct ? '太厉害了！' : '没关系～';
+  document.getElementById('resultName').textContent = `答案是：${currentQ.name}`;
+  if (!correct) score = 50;
+  document.getElementById('resultScore').textContent = Math.round(score);
+  const stars = correct ? Math.max(1, 5 - clueIdx) : 1;
+  document.getElementById('resultStars').textContent = '⭐'.repeat(stars);
+  document.getElementById('resultDetail').textContent =
+    `第${clueIdx+1}条线索${correct?'猜对':'才揭示答案'} · 连击×${streak||1}`;
+}
+
+function resetGame() {
+  document.getElementById('resultOverlay').classList.remove('show');
+  document.getElementById('tempIndicator').style.display = 'none';
+  document.getElementById('guessInput').value = '';
+  currentQ = questions[Math.floor(Math.random()*questions.length)];
+  clueIdx=0; score=0; streak=0; renderAll();
+}
+
+document.getElementById('guessInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitGuess();
+});
+</script>
+</body>
+</html>
