@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>猜猜TA是谁 · 暗黑破坏神</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=MedievalSharp&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0B0806;
+      --bg-deep: #060403;
+      --stone: #1A1510;
+      --stone-light: #231E17;
+      --stone-border: #2E2820;
+      --gold: #C8A84E;
+      --gold-bright: #E8C85A;
+      --gold-dim: #8A7234;
+      --gold-glow: rgba(200,168,78,0.35);
+      --blood: #8B1A1A;
+      --blood-bright: #C42B2B;
+      --blood-glow: rgba(196,43,43,0.3);
+      --fg: #D4C8A8;
+      --fg-bright: #EDE4C8;
+      --muted: #7A6E58;
+      --rune: #4A6A4A;
+      --rune-glow: rgba(74,106,74,0.4);
+      --serif: 'Cinzel', 'Noto Serif SC', Georgia, serif;
+      --gothic: 'MedievalSharp', 'Noto Serif SC', cursive;
+      --sans: 'Noto Sans SC', serif;
+    }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 0 16px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* === AMBIENT LAYERS === */
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse at 50% 100%, rgba(139,26,26,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 0%, rgba(200,168,78,0.04) 0%, transparent 50%);
+    }
+    /* Vignette */
+    body::after {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 999;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+    }
+
+    /* Floating particles */
+    .particles {
+      position: fixed; inset: 0; pointer-events: none; z-index: 1;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute; width: 2px; height: 2px;
+      background: var(--gold); border-radius: 50%;
+      opacity: 0; animation: float 8s infinite;
+    }
+    .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 10s; }
+    .particle:nth-child(2) { left: 25%; animation-delay: 2s; animation-duration: 8s; }
+    .particle:nth-child(3) { left: 45%; animation-delay: 4s; animation-duration: 12s; }
+    .particle:nth-child(4) { left: 65%; animation-delay: 1s; animation-duration: 9s; }
+    .particle:nth-child(5) { left: 80%; animation-delay: 3s; animation-duration: 11s; }
+    .particle:nth-child(6) { left: 90%; animation-delay: 5s; animation-duration: 7s; }
+    @keyframes float {
+      0% { bottom: -10px; opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { bottom: 110%; opacity: 0; }
+    }
+
+    /* === ORNATE FRAME MIXIN === */
+    .ornate-frame {
+      position: relative;
+      background: linear-gradient(180deg, var(--stone) 0%, var(--bg-deep) 100%);
+      border: 1px solid var(--stone-border);
+    }
+    .ornate-frame::before {
+      content: ''; position: absolute; inset: 3px;
+      border: 1px solid rgba(200,168,78,0.12);
+      pointer-events: none;
+    }
+    .ornate-frame::after {
+      content: ''; position: absolute; inset: 0;
+      background:
+        linear-gradient(135deg, rgba(200,168,78,0.08) 0%, transparent 20%),
+        linear-gradient(225deg, rgba(200,168,78,0.04) 0%, transparent 20%);
+      pointer-events: none;
+    }
+
+    /* Corner ornaments */
+    .corner { position: absolute; width: 16px; height: 16px; z-index: 2; }
+    .corner::before, .corner::after {
+      content: ''; position: absolute; background: var(--gold-dim);
+    }
+    .corner-tl { top: -1px; left: -1px; }
+    .corner-tl::before { top: 0; left: 0; width: 16px; height: 1px; }
+    .corner-tl::after { top: 0; left: 0; width: 1px; height: 16px; }
+    .corner-tr { top: -1px; right: -1px; }
+    .corner-tr::before { top: 0; right: 0; width: 16px; height: 1px; }
+    .corner-tr::after { top: 0; right: 0; width: 1px; height: 16px; }
+    .corner-bl { bottom: -1px; left: -1px; }
+    .corner-bl::before { bottom: 0; left: 0; width: 16px; height: 1px; }
+    .corner-bl::after { bottom: 0; left: 0; width: 1px; height: 16px; }
+    .corner-br { bottom: -1px; right: -1px; }
+    .corner-br::before { bottom: 0; right: 0; width: 16px; height: 1px; }
+    .corner-br::after { bottom: 0; right: 0; width: 1px; height: 16px; }
+
+    /* Divider rune line */
+    .rune-divider {
+      display: flex; align-items: center; gap: 8px; margin: 16px 0;
+    }
+    .rune-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), transparent); }
+    .rune-dot {
+      width: 6px; height: 6px; transform: rotate(45deg);
+      background: var(--gold-dim); border: 1px solid var(--gold);
+    }
+
+    /* === HOME === */
+    .home-screen {
+      display: flex; flex-direction: column;
+      justify-content: center; min-height: 100vh;
+      position: relative; z-index: 2; text-align: center;
+      padding: 40px 0;
+    }
+    .home-skull { font-size: 40px; margin-bottom: 8px; filter: drop-shadow(0 0 12px var(--blood-glow)); }
+    .home-title {
+      font-family: var(--serif); font-size: 36px; font-weight: 900;
+      color: var(--gold-bright);
+      text-shadow: 0 0 20px var(--gold-glow), 0 2px 4px rgba(0,0,0,0.8);
+      letter-spacing: 3px; margin-bottom: 4px;
+    }
+    .home-subtitle {
+      font-family: var(--gothic); font-size: 13px; color: var(--muted);
+      letter-spacing: 4px; margin-bottom: 32px;
+    }
+    .home-desc {
+      font-size: 14px; color: var(--muted); line-height: 1.8;
+      font-style: italic; margin-bottom: 36px;
+      max-width: 300px; margin-left: auto; margin-right: auto;
+    }
+
+    .mode-panel { display: flex; flex-direction: column; gap: 8px; }
+    .mode-entry {
+      position: relative; padding: 18px 20px; cursor: pointer;
+      text-align: left; transition: all 0.3s ease;
+    }
+    .mode-entry:hover {
+      background: linear-gradient(180deg, var(--stone-light) 0%, var(--stone) 100%);
+      border-color: var(--gold-dim);
+    }
+    .mode-entry:hover .mode-glow { opacity: 1; }
+    .mode-glow {
+      position: absolute; inset: 0; opacity: 0;
+      background: radial-gradient(ellipse at center, rgba(200,168,78,0.06) 0%, transparent 70%);
+      transition: opacity 0.3s; pointer-events: none;
+    }
+    .mode-row { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
+    .mode-sigil {
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; border: 1px solid var(--gold-dim);
+      background: linear-gradient(135deg, var(--stone), var(--bg-deep));
+    }
+    .mode-name {
+      font-family: var(--serif); font-size: 15px; font-weight: 700;
+      color: var(--fg-bright); letter-spacing: 1px;
+    }
+    .mode-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .mode-seal {
+      margin-left: auto; font-family: var(--serif); font-size: 9px;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 3px 10px; border: 1px solid var(--gold-dim);
+      color: var(--gold); position: relative; z-index: 1;
+    }
+    .mode-seal.locked { border-color: var(--stone-border); color: var(--stone-border); }
+
+    /* === GAME === */
+    .game-screen { display: none; flex-direction: column; min-height: 100vh; padding-top: 12px; position: relative; z-index: 2; }
+    .game-screen.active { display: flex; }
+    .home-screen.hidden { display: none; }
+
+    /* Top bar - like Diablo HUD */
+    .hud-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px; padding: 10px 12px;
+    }
+    .hud-left, .hud-right { display: flex; align-items: center; gap: 10px; }
+    .hud-label {
+      font-family: var(--serif); font-size: 10px; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .hud-value {
+      font-family: var(--serif); font-size: 16px; font-weight: 700;
+      color: var(--gold-bright);
+      text-shadow: 0 0 10px var(--gold-glow);
+    }
+    .hud-streak {
+      font-family: var(--serif); font-size: 13px; color: var(--blood-bright);
+      text-shadow: 0 0 8px var(--blood-glow);
+    }
+
+    /* Progress - rune slots */
+    .rune-slots {
+      display: flex; justify-content: center; gap: 6px; margin-bottom: 16px;
+    }
+    .rune-slot {
+      width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--stone-border);
+      background: var(--bg-deep); font-size: 10px;
+      transform: rotate(45deg); transition: all 0.5s ease;
+    }
+    .rune-slot-inner {
+      transform: rotate(-45deg); font-family: var(--serif);
+      font-size: 8px; color: var(--stone-border);
+    }
+    .rune-slot.lit {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, var(--stone), var(--stone-light));
+      box-shadow: 0 0 8px var(--gold-glow), inset 0 0 6px rgba(200,168,78,0.1);
+    }
+    .rune-slot.lit .rune-slot-inner { color: var(--gold-bright); }
+    .rune-slot.now {
+      border-color: var(--gold-bright);
+      animation: runePulse 2s infinite;
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+    .rune-slot.now .rune-slot-inner { color: var(--gold-bright); }
+    @keyframes runePulse {
+      0%,100% { box-shadow: 0 0 8px var(--gold-glow); }
+      50% { box-shadow: 0 0 20px var(--gold-glow), 0 0 40px rgba(200,168,78,0.1); }
+    }
+
+    /* Clue - parchment style */
+    .clue-scroll {
+      position: relative; margin: 0 4px 16px; padding: 24px 20px;
+      animation: scrollReveal 0.6s ease;
+    }
+    .clue-scroll .corner { width: 20px; height: 20px; }
+    .clue-scroll .corner::before { width: 20px; }
+    .clue-scroll .corner::after { height: 20px; }
+    .clue-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    }
+    .clue-sigil {
+      font-size: 14px; color: var(--blood-bright);
+      text-shadow: 0 0 8px var(--blood-glow);
+    }
+    .clue-label {
+      font-family: var(--serif); font-size: 10px; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--gold-dim);
+    }
+    .clue-body {
+      font-family: var(--serif); font-size: 17px; font-weight: 400;
+      line-height: 1.8; color: var(--fg-bright);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    .clue-footer {
+      margin-top: 14px; text-align: center;
+    }
+    .clue-rune-text {
+      font-family: var(--gothic); font-size: 11px; color: var(--stone-border);
+      letter-spacing: 6px;
+    }
+
+    /* Temperature - blood orb style */
+    .blood-orb-wrap {
+      display: none; align-items: center; gap: 12px;
+      padding: 10px 16px; margin: 0 4px 12px;
+    }
+    .blood-orb-wrap.show { display: flex; }
+    .blood-orb {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid var(--blood);
+      background: radial-gradient(circle at 40% 35%, var(--blood-bright), var(--blood));
+      box-shadow: 0 0 12px var(--blood-glow), inset 0 -4px 8px rgba(0,0,0,0.4);
+      position: relative; transition: all 0.5s;
+    }
+    .blood-orb::after {
+      content: ''; position: absolute; top: 4px; left: 6px;
+      width: 8px; height: 4px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+    }
+    .blood-fill {
+      flex: 1; height: 6px; border-radius: 3px;
+      background: var(--stone-border); overflow: hidden;
+      position: relative;
+    }
+    .blood-fill-bar {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--blood), var(--blood-bright));
+      transition: width 0.6s ease;
+      box-shadow: 0 0 6px var(--blood-glow);
+    }
+    .blood-label {
+      font-family: var(--serif); font-size: 11px; letter-spacing: 1px;
+      color: var(--blood-bright); min-width: 60px; text-align: right;
+    }
+
+    /* Input - gothic style */
+    .input-area { margin-top: auto; padding: 0 4px 24px; }
+    .input-frame-wrap { position: relative; margin-bottom: 12px; }
+    .input-frame-inner {
+      display: flex; align-items: center;
+      background: linear-gradient(180deg, var(--stone) 0%, var(--bg-deep) 100%);
+      border: 1px solid var(--stone-border);
+      position: relative;
+    }
+    .input-frame-inner::before {
+      content: ''; position: absolute; inset: 2px;
+      border: 1px solid rgba(200,168,78,0.08); pointer-events: none;
+    }
+    .input-frame-inner:focus-within {
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 12px rgba(200,168,78,0.1);
+    }
+    .input-rune {
+      padding: 14px 12px; font-size: 14px; color: var(--gold-dim);
+      border-right: 1px solid var(--stone-border);
+    }
+    .guess-input {
+      flex: 1; padding: 14px 14px; background: none; border: none;
+      font-family: var(--sans); font-size: 16px; font-weight: 300;
+      color: var(--fg-bright); outline: none;
+    }
+    .guess-input::placeholder { color: var(--stone-border); }
+    .guess-btn-diablo {
+      padding: 14px 20px; border: none; cursor: pointer;
+      font-family: var(--serif); font-size: 12px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+      color: var(--bg); transition: all 0.2s;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    }
+    .guess-btn-diablo:hover {
+      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+    .guess-btn-diablo:active { transform: scale(0.97); }
+
+    .skip-row { text-align: center; }
+    .skip-link-diablo {
+      font-family: var(--serif); font-size: 11px; color: var(--muted);
+      background: none; border: none; cursor: pointer;
+      letter-spacing: 1px; transition: color 0.2s;
+    }
+    .skip-link-diablo:hover { color: var(--gold); }
+
+    /* Feedback toast */
+    .diablo-toast {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      padding: 10px 24px; z-index: 200;
+      font-family: var(--serif); font-size: 13px; letter-spacing: 1px;
+      display: none; border: 1px solid;
+    }
+    .diablo-toast.show { display: block; animation: toastDown 0.4s ease; }
+    .diablo-toast.wrong {
+      border-color: var(--blood); color: var(--blood-bright);
+      background: linear-gradient(180deg, rgba(139,26,26,0.2) 0%, rgba(11,8,6,0.95) 100%);
+      box-shadow: 0 4px 20px var(--blood-glow);
+    }
+    .diablo-toast.correct {
+      border-color: var(--gold); color: var(--gold-bright);
+      background: linear-gradient(180deg, rgba(200,168,78,0.15) 0%, rgba(11,8,6,0.95) 100%);
+      box-shadow: 0 4px 20px var(--gold-glow);
+    }
+
+    /* Shake */
+    .shake { animation: diabloShake 0.4s ease; }
+    @keyframes diabloShake {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px) rotate(-0.5deg)}
+      40%{transform:translateX(6px) rotate(0.5deg)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
+    }
+
+    /* Result - dark ritual */
+    .result-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: var(--bg-deep);
+      flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; padding: 40px;
+    }
+    .result-overlay::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, rgba(200,168,78,0.05) 0%, transparent 60%);
+    }
+    .result-overlay.show { display: flex; animation: fadeUp 0.6s ease; }
+    .result-rune-circle {
+      width: 80px; height: 80px; border-radius: 50%;
+      border: 2px solid var(--gold-dim); margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; position: relative;
+      box-shadow: 0 0 30px var(--gold-glow), inset 0 0 20px rgba(200,168,78,0.05);
+    }
+    .result-rune-circle::before {
+      content: ''; position: absolute; inset: -6px; border-radius: 50%;
+      border: 1px solid rgba(200,168,78,0.15);
+    }
+    .result-heading {
+      font-family: var(--serif); font-size: 24px; font-weight: 900;
+      color: var(--gold-bright); letter-spacing: 3px;
+      text-shadow: 0 0 20px var(--gold-glow);
+      margin-bottom: 6px;
+    }
+    .result-name-reveal {
+      font-family: var(--gothic); font-size: 18px; color: var(--fg);
+      margin-bottom: 28px;
+    }
+    .result-frame {
+      position: relative; padding: 28px 44px; margin-bottom: 32px;
+    }
+    .result-frame .corner { width: 20px; height: 20px; }
+    .result-frame .corner::before { width: 20px; }
+    .result-frame .corner::after { height: 20px; }
+    .result-score-label {
+      font-family: var(--serif); font-size: 9px; letter-spacing: 4px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+    .result-score-num {
+      font-family: var(--serif); font-size: 52px; font-weight: 900;
+      color: var(--gold-bright);
+      text-shadow: 0 0 30px var(--gold-glow);
+    }
+    .result-stars { font-size: 18px; margin: 10px 0; letter-spacing: 6px; }
+    .result-note {
+      font-family: var(--serif); font-size: 11px; color: var(--muted);
+      letter-spacing: 1px;
+    }
+    .replay-btn {
+      padding: 14px 48px; cursor: pointer;
+      font-family: var(--serif); font-size: 12px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+      color: var(--bg); border: none;
+      transition: all 0.2s; position: relative;
+    }
+    .replay-btn::before {
+      content: ''; position: absolute; inset: -4px;
+      border: 1px solid var(--gold-dim);
+    }
+    .replay-btn:hover {
+      background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 100%);
+      box-shadow: 0 0 24px var(--gold-glow);
+    }
+
+    @keyframes scrollReveal { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeUp { from{opacity:0} to{opacity:1} }
+    @keyframes toastDown { from{opacity:0;transform:translate(-50%,-12px)} to{opacity:1;transform:translate(-50%,0)} }
+  </style>
+</head>
+<body>
+
+<!-- Ambient particles -->
+<div class="particles">
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+</div>
+
+<!-- HOME -->
+<div class="home-screen" id="homeScreen">
+  <div class="home-skull">💀</div>
+  <div class="home-title">猜猜TA是谁</div>
+  <div class="home-subtitle">SANCTUM OF NAMES</div>
+  <div class="rune-divider" style="max-width:200px;margin:0 auto 20px;">
+    <div class="rune-line"></div>
+    <div class="rune-dot"></div>
+    <div class="rune-line"></div>
+  </div>
+  <div class="home-desc">
+    在黑暗中追寻线索的微光，<br>
+    以智慧之刃劈开迷雾，<br>
+    唤出那隐藏于阴影之名。
+  </div>
+  <div class="mode-panel">
+    <div class="mode-entry ornate-frame" onclick="startGame()">
+      <div class="mode-glow"></div>
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+      <div class="mode-row">
+        <div class="mode-sigil">🔦</div>
+        <div>
+          <div class="mode-name">渐进揭秘</div>
+          <div class="mode-desc">线索逐条出现，越早猜对越厉害</div>
+        </div>
+        <div class="mode-seal">进入</div>
+      </div>
+    </div>
+    <div class="mode-entry ornate-frame" onclick="void(0)">
+      <div class="mode-glow"></div>
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+      <div class="mode-row">
+        <div class="mode-sigil">❓</div>
+        <div>
+          <div class="mode-name">二十问</div>
+          <div class="mode-desc">只问是非题，二十个问题内破案</div>
+        </div>
+        <div class="mode-seal locked">封印</div>
+      </div>
+    </div>
+    <div class="mode-entry ornate-frame" onclick="void(0)">
+      <div class="mode-glow"></div>
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+      <div class="mode-row">
+        <div class="mode-sigil">🤝</div>
+        <div>
+          <div class="mode-name">描述接龙</div>
+          <div class="mode-desc">三个关键词，猜出一个名字</div>
+        </div>
+        <div class="mode-seal locked">封印</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="game-screen" id="gameScreen">
+  <div class="hud-top">
+    <div class="hud-left">
+      <div class="hud-label">SCORE</div>
+      <div class="hud-value" id="scoreNum">0</div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-label">STREAK</div>
+      <div class="hud-streak" id="streakNum">0</div>
+    </div>
+  </div>
+
+  <div class="rune-slots" id="runeSlots"></div>
+
+  <div class="clue-scroll ornate-frame" id="clueScroll">
+    <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+    <div class="clue-header">
+      <span class="clue-sigil">◆</span>
+      <span class="clue-label">线索 <span id="clueNum">I</span></span>
+    </div>
+    <div class="clue-body" id="clueText"></div>
+    <div class="clue-footer">
+      <div class="rune-divider" style="margin:10px 0 0;">
+        <div class="rune-line"></div>
+        <div class="clue-rune-text" id="runeText">ᚠ ᚢ ᚦ</div>
+        <div class="rune-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="blood-orb-wrap ornate-frame" id="bloodOrb">
+    <div class="blood-orb" id="bloodOrbInner"></div>
+    <div class="blood-fill"><div class="blood-fill-bar" id="bloodBar"></div></div>
+    <div class="blood-label" id="bloodLabel">DISTANT</div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-frame-wrap">
+      <div class="input-frame-inner">
+        <div class="input-rune">⚔</div>
+        <input class="guess-input" id="guessInput" placeholder="道出那隐藏之名..." autocomplete="off">
+        <button class="guess-btn-diablo" onclick="submitGuess()">献祭</button>
+      </div>
+    </div>
+    <div class="skip-row">
+      <button class="skip-link-diablo" onclick="nextClue()">跳过此线索，承受代价 →</button>
+    </div>
+  </div>
+</div>
+
+<div class="diablo-toast" id="diabloToast"></div>
+
+<!-- RESULT -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-rune-circle" id="resultCircle">
+    <span id="resultIcon">✦</span>
+  </div>
+  <div class="result-heading" id="resultHeading"></div>
+  <div class="result-name-reveal" id="resultNameReveal"></div>
+  <div class="result-frame ornate-frame">
+    <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+    <div class="result-score-label">灵魂献祭</div>
+    <div class="result-score-num" id="resultScore">0</div>
+    <div class="result-stars" id="resultStars"></div>
+    <div class="result-note" id="resultNote"></div>
+  </div>
+  <button class="replay-btn" onclick="resetGame()">再入深渊</button>
+</div>
+
+<script>
+const Q=[
+  {name:"诸葛亮",aliases:["孔明","卧龙","诸葛孔明"],clues:["这是一位中国古代的政治家","他活跃在东汉末年到三国时期","他是一位著名的军事谋略家","他被三顾茅庐请出山","他的标志性形象是手持羽扇、头戴纶巾","他写了一篇著名的出师表","他的名字中有一个"亮"字","他的姓氏是一个复姓"]},
+  {name:"灭霸",aliases:["Thanos","萨诺斯","紫薯"],clues:["这是一个虚构角色","他来自一部超级英雄电影","他是漫威宇宙的角色","他是一个反派，但自认为在拯救宇宙","他戴着一只金色手套，上面有六颗宝石","他打了一个响指，消灭了一半生命","他的皮肤是紫色的","他的名字在希腊语中意为"死亡""]},
+  {name:"周杰伦",aliases:["Jay Chou","杰伦","周董","小公举"],clues:["这是一位华语音乐人","他来自中国台湾","他被称为"亚洲流行天王"","他的音乐风格融合了中国风和R&B","他有一首歌叫《青花瓷》","他的口头禅是"哎呦不错哦"","他娶了一位模特叫昆凌","他的姓氏是一个朝代名"]}
+];
+const ROM=['I','II','III','IV','V','VI','VII','VIII'];
+const RUNES=['ᚠ ᚢ ᚦ','ᚨ ᚱ ᚲ','ᚷ ᚹ ᚺ','ᚾ ᛁ ᛃ','ᛇ ᛈ ᛉ','ᛊ ᛏ ᛒ','ᛖ ᛗ ᛚ','ᛜ ᛞ ᛟ'];
+let cur,idx,score,streak;const m=[8,7,6,5,4,3,2,1];
+
+function startGame(){
+  document.getElementById('homeScreen').classList.add('hidden');
+  const g=document.getElementById('gameScreen');g.classList.add('active');g.style.display='flex';
+  cur=Q[Math.floor(Math.random()*Q.length)];idx=0;score=0;streak=0;render();
+}
+
+function render(){
+  const rs=document.getElementById('runeSlots');rs.innerHTML='';
+  for(let i=0;i<8;i++){
+    const d=document.createElement('div');
+    d.className='rune-slot'+(i<idx?' lit':'')+(i===idx?' now':'');
+    d.innerHTML='<span class="rune-slot-inner">'+ROM[i]+'</span>';
+    rs.appendChild(d);
+  }
+  const cs=document.getElementById('clueScroll');
+  cs.style.animation='none';cs.offsetHeight;cs.style.animation='scrollReveal 0.6s ease';
+  document.getElementById('clueNum').textContent=ROM[idx];
+  document.getElementById('clueText').textContent=cur.clues[idx];
+  document.getElementById('runeText').textContent=RUNES[idx];
+  document.getElementById('scoreNum').textContent=score;
+  document.getElementById('streakNum').textContent=streak;
+}
+
+function nextClue(){if(idx>=7)return;idx++;render();document.getElementById('guessInput').value='';document.getElementById('bloodOrb').classList.remove('show');}
+
+function submitGuess(){
+  const v=document.getElementById('guessInput').value.trim();if(!v)return;
+  const n=v.toLowerCase().replace(/\s/g,'');
+  const ok=n===cur.name.toLowerCase().replace(/\s/g,'')||cur.aliases.some(a=>n===a.toLowerCase().replace(/\s/g,''));
+  if(ok){
+    const pts=Math.round(100*m[idx]*1.5);score+=pts;streak++;
+    toast('correct',`✦ 命运已定：${cur.name} +${pts}`);
+    setTimeout(()=>showResult(true),800);
+  } else {
+    streak=0;
+    document.getElementById('clueScroll').classList.add('shake');
+    setTimeout(()=>document.getElementById('clueScroll').classList.remove('shake'),400);
+    toast('wrong','💀 邪灵低语：此名非也...');
+    showBlood();if(idx<7)nextClue();else showResult(false);
+  }
+  document.getElementById('scoreNum').textContent=score;
+  document.getElementById('streakNum').textContent=streak;
+}
+
+function toast(cls,msg){const t=document.getElementById('diabloToast');t.className='diablo-toast show '+cls;t.textContent=msg;setTimeout(()=>t.classList.remove('show'),1500);}
+
+function showBlood(){
+  const b=document.getElementById('bloodOrb');b.classList.add('show');
+  const pct=Math.min(100,(idx+1)/8*100);
+  document.getElementById('bloodBar').style.width=pct+'%';
+  const orb=document.getElementById('bloodOrbInner');
+  const lbl=document.getElementById('bloodLabel');
+  if(pct>75){orb.style.boxShadow='0 0 20px rgba(196,43,43,0.6)';lbl.textContent='BLAZING';lbl.style.color='#C42B2B';}
+  else if(pct>50){orb.style.boxShadow='0 0 14px rgba(200,168,78,0.4)';lbl.textContent='WARMING';lbl.style.color='#C8A84E';}
+  else{orb.style.boxShadow='0 0 8px rgba(74,106,74,0.4)';lbl.textContent='DISTANT';lbl.style.color='#4A6A4A';}
+}
+
+function showResult(ok){
+  const o=document.getElementById('resultOverlay');o.classList.add('show');
+  document.getElementById('resultIcon').textContent=ok?'✦':'○';
+  document.getElementById('resultHeading').textContent=ok?'命运已定':'迷雾散尽';
+  document.getElementById('resultNameReveal').textContent=cur.name;
+  if(!ok)score=50;
+  document.getElementById('resultScore').textContent=score;
+  document.getElementById('resultStars').textContent='✦'.repeat(ok?Math.max(1,5-idx):1);
+  document.getElementById('resultNote').textContent=`第${idx+1}条线索 · 难度 ×1.5 · 连击 ${streak||1}`;
+}
+
+function resetGame(){document.getElementById('resultOverlay').classList.remove('show');document.getElementById('bloodOrb').classList.remove('show');cur=Q[Math.floor(Math.random()*Q.length)];idx=0;score=0;streak=0;render();}
+
+document.getElementById('guessInput').addEventListener('keydown',e=>{if(e.key==='Enter')submitGuess();});
+</script>
+</body>
+</html>
