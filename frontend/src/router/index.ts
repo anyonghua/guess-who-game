@@ -12,6 +12,11 @@ const routes = [
     component: () => import('../views/GameView.vue'),
   },
   {
+    path: '/twenty-q',
+    name: 'TwentyQ',
+    component: () => import('../views/TwentyQView.vue'),
+  },
+  {
     path: '/result',
     name: 'Result',
     component: () => import('../views/ResultView.vue'),

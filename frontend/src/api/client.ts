@@ -13,7 +13,7 @@ async function request(path: string, options: RequestInit = {}) {
 }
 
 export const api = {
-  // 游戏
+  // === 渐进揭秘 ===
   startGame(difficulty = 'normal') {
     return request('/game/progressive/start', {
       method: 'POST',
@@ -32,7 +32,30 @@ export const api = {
     return request(`/game/progressive/${sessionId}/result`)
   },
 
-  // 题库
+  // === 二十问 ===
+  startTwentyQ() {
+    return request('/game/twenty-q/start', { method: 'POST' })
+  },
+
+  askQuestion(sessionId: string, question: string) {
+    return request(`/game/twenty-q/${sessionId}/ask`, {
+      method: 'POST',
+      body: JSON.stringify({ question }),
+    })
+  },
+
+  finalGuess(sessionId: string, answer: string) {
+    return request(`/game/twenty-q/${sessionId}/final-guess`, {
+      method: 'POST',
+      body: JSON.stringify({ answer }),
+    })
+  },
+
+  getTwentyQResult(sessionId: string) {
+    return request(`/game/twenty-q/${sessionId}/result`)
+  },
+
+  // === 题库 ===
   getQuestionStats() {
     return request('/questions/stats')
   },
