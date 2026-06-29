@@ -1,13 +1,10 @@
 [
   {
-    "id": "person_001",
     "name": "诸葛亮",
-    "name_aliases": ["孔明", "卧龙", "诸葛孔明"],
+    "aliases": ["孔明", "卧龙", "诸葛孔明"],
     "category": "历史人物",
     "subcategory": "三国",
-    "difficulty": 3,
-    "era": "公元181-234年",
-    "nationality": "中国",
+    "difficulty": 2,
     "progressive_clues": [
       "这是一位中国古代的政治家",
       "他活跃在东汉末年到三国时期",
@@ -15,38 +12,19 @@
       "他被三顾茅庐请出山",
       "他的标志性形象是手持羽扇、头戴纶巾",
       "他写了一篇著名的出师表",
-      "他的名字中有一个'亮'字",
+      "他的名字中有一个「亮」字",
       "他的姓氏是一个复姓"
     ],
-    "twenty_q_meta": {
-      "is_real": true,
-      "is_alive": false,
-      "is_chinese": true,
-      "is_ancient": true,
-      "is_political": true,
-      "is_military": true,
-      "is_scientist": false,
-      "is_entertainer": false,
-      "is_fictional": false,
-      "gender": "male",
-      "dynasty": "三国"
-    },
-    "description_keywords": [
-      ["羽扇", "纶巾", "三国"],
-      ["草船借箭", "出师表", "空城计"],
-      ["刘备", "隆中对", "六出祁山"]
-    ],
-    "emoji_description": ["🪶🌀", "🏯⚔️", "📖😭"]
+    "twenty_q_meta": {"is_real": true, "is_chinese": true, "is_ancient": true},
+    "description_keywords": [["羽扇", "纶巾", "三国"]],
+    "emoji_description": ["🪶🌀", "🏯⚔️"]
   },
   {
-    "id": "person_002",
     "name": "灭霸",
-    "name_aliases": ["Thanos", "萨诺斯", "紫薯"],
+    "aliases": ["Thanos", "萨诺斯", "紫薯"],
     "category": "虚构角色",
     "subcategory": "漫威",
-    "difficulty": 2,
-    "era": "现代",
-    "nationality": "虚构-泰坦星",
+    "difficulty": 1,
     "progressive_clues": [
       "这是一个虚构角色",
       "他来自一部超级英雄电影",
@@ -55,115 +33,58 @@
       "他戴着一只金色手套，上面有六颗宝石",
       "他打了一个响指，消灭了一半生命",
       "他的皮肤是紫色的",
-      "他的名字在希腊语中意为'死亡'"
+      "他的名字在希腊语中意为「死亡」"
     ],
-    "twenty_q_meta": {
-      "is_real": false,
-      "is_alive": true,
-      "is_chinese": false,
-      "is_ancient": false,
-      "is_political": false,
-      "is_military": true,
-      "is_scientist": false,
-      "is_entertainer": false,
-      "is_fictional": true,
-      "gender": "male",
-      "universe": "漫威"
-    },
-    "description_keywords": [
-      ["紫色", "手套", "宝石"],
-      ["响指", "消灭", "一半"],
-      ["复仇者", "最终boss", "泰坦"]
-    ],
-    "emoji_description": ["🟣🧤", "👋💥", "🦸‍♂️💀"]
+    "twenty_q_meta": {"is_real": false, "is_fictional": true},
+    "description_keywords": [["紫色", "手套", "宝石"]],
+    "emoji_description": ["🟣🧤", "👋💥"]
   },
   {
-    "id": "person_003",
     "name": "周杰伦",
-    "name_aliases": ["Jay Chou", "杰伦", "周董", "小公举"],
+    "aliases": ["Jay Chou", "杰伦", "周董", "小公举"],
     "category": "音乐人",
     "subcategory": "华语流行",
     "difficulty": 1,
-    "era": "现代",
-    "nationality": "中国",
     "progressive_clues": [
       "这是一位华语音乐人",
       "他来自中国台湾",
-      "他被称为'亚洲流行天王'",
+      "他被称为「亚洲流行天王」",
       "他的音乐风格融合了中国风和R&B",
-      "他有一首歌叫《青花瓷》",
-      "他的口头禅是'哎呦不错哦'",
+      "他有一首歌叫「青花瓷」",
+      "他的口头禅是「哎呦不错哦」",
       "他娶了一位模特叫昆凌",
       "他的姓氏是一个朝代名"
     ],
-    "twenty_q_meta": {
-      "is_real": true,
-      "is_alive": true,
-      "is_chinese": true,
-      "is_ancient": false,
-      "is_political": false,
-      "is_military": false,
-      "is_scientist": false,
-      "is_entertainer": true,
-      "is_fictional": false,
-      "gender": "male",
-      "field": "music"
-    },
-    "description_keywords": [
-      ["青花瓷", "中国风", "双截棍"],
-      ["台湾", "天王", "R&B"],
-      ["昆凌", "哎呦", "魔术"]
-    ],
-    "emoji_description": ["🎵🎤", "🇨🇳🎶", "😎🎹"]
+    "twenty_q_meta": {"is_real": true, "is_entertainer": true},
+    "description_keywords": [["青花瓷", "中国风", "双截棍"]],
+    "emoji_description": ["🎵🎤", "🇨🇳🎶"]
   },
   {
-    "id": "person_004",
     "name": "爱因斯坦",
-    "name_aliases": ["Albert Einstein", "老爱"],
+    "aliases": ["Albert Einstein", "老爱"],
     "category": "科学家",
     "subcategory": "物理",
     "difficulty": 2,
-    "era": "1879-1955",
-    "nationality": "德国/美国",
     "progressive_clues": [
       "这是一位科学家",
       "他出生于德国，后来移居美国",
       "他的研究领域是理论物理",
       "他提出了相对论",
       "他获得过诺贝尔物理学奖",
-      "他的著名公式 E=mc² 改变了人类对能量的认知",
+      "他的著名公式 E=mc2 改变了人类对能量的认知",
       "他有一头标志性的蓬乱白发",
-      "他的名字也用来形容'天才'"
+      "他的名字也用来形容「天才」"
     ],
-    "twenty_q_meta": {
-      "is_real": true,
-      "is_alive": false,
-      "is_chinese": false,
-      "is_ancient": false,
-      "is_political": false,
-      "is_military": false,
-      "is_scientist": true,
-      "is_entertainer": false,
-      "is_fictional": false,
-      "gender": "male",
-      "field": "physics"
-    },
-    "description_keywords": [
-      ["相对论", "E=mc²", "物理"],
-      ["诺贝尔", "天才", "白发"],
-      ["德国", "光速", "量子"]
-    ],
-    "emoji_description": ["🧠💡", "⚛️🔬", "👨‍🔬🏆"]
+    "twenty_q_meta": {"is_real": true, "is_scientist": true},
+    "description_keywords": [["相对论", "E=mc2", "物理"]],
+    "emoji_description": ["🧠💡", "⚛️🔬"]
   },
   {
-    "id": "person_005",
     "name": "孙悟空",
-    "name_aliases": ["美猴王", "齐天大圣", "斗战胜佛", "Monkey King"],
+    "aliases": ["美猴王", "齐天大圣", "斗战胜佛", "Monkey King"],
     "category": "虚构角色",
     "subcategory": "中国古典",
     "difficulty": 1,
-    "era": "神话",
-    "nationality": "中国",
     "progressive_clues": [
       "这是一个虚构角色",
       "他来自一部中国古典小说",
@@ -174,24 +95,108 @@
       "他的武器是一根金箍棒",
       "他是一只猴子"
     ],
-    "twenty_q_meta": {
-      "is_real": false,
-      "is_alive": true,
-      "is_chinese": true,
-      "is_ancient": true,
-      "is_political": false,
-      "is_military": false,
-      "is_scientist": false,
-      "is_entertainer": false,
-      "is_fictional": true,
-      "gender": "male",
-      "source": "西游记"
-    },
-    "description_keywords": [
-      ["猴子", "金箍棒", "七十二变"],
-      ["大闹天宫", "西游", "唐僧"],
-      ["筋斗云", "火眼金睛", "花果山"]
+    "twenty_q_meta": {"is_real": false, "is_fictional": true},
+    "description_keywords": [["猴子", "金箍棒", "七十二变"]],
+    "emoji_description": ["🐒💪", "☁️✨"]
+  },
+  {
+    "name": "李白",
+    "aliases": ["诗仙", "太白", "李太白", "青莲居士"],
+    "category": "历史人物",
+    "subcategory": "唐朝",
+    "difficulty": 2,
+    "progressive_clues": [
+      "这是一位中国古代的文学家",
+      "他生活在唐朝",
+      "他被称为「诗仙」",
+      "他的诗歌豪放飘逸，想象力极丰富",
+      "他写过「床前明月光」",
+      "他嗜酒如命，杜甫说他「斗酒诗百篇」",
+      "他的名字是一种颜色和一种称呼",
+      "传说他捞月亮而溺水身亡"
     ],
-    "emoji_description": ["🐒💪", "☁️✨", "🏔️🍑"]
+    "twenty_q_meta": {"is_real": true, "is_chinese": true, "is_ancient": true},
+    "description_keywords": [["诗仙", "唐朝", "豪放"]],
+    "emoji_description": ["📜🍶", "🌙✨"]
+  },
+  {
+    "name": "梅西",
+    "aliases": ["Lionel Messi", "煤球王", "梅老板", "里奥"],
+    "category": "体育明星",
+    "subcategory": "足球",
+    "difficulty": 1,
+    "progressive_clues": [
+      "这是一位体育明星",
+      "他来自南美洲",
+      "他从事的运动是足球",
+      "他曾长期效力于巴塞罗那",
+      "他被称为「球王」",
+      "他获得了8次金球奖",
+      "他在2022年世界杯决赛中带领阿根廷夺冠",
+      "他的身高只有170cm"
+    ],
+    "twenty_q_meta": {"is_real": true, "is_entertainer": true},
+    "description_keywords": [["足球", "阿根廷", "巴塞罗那"]],
+    "emoji_description": ["⚽🇦🇷", "🏆👑"]
+  },
+  {
+    "name": "牛顿",
+    "aliases": ["Isaac Newton", "艾萨克·牛顿"],
+    "category": "科学家",
+    "subcategory": "物理",
+    "difficulty": 2,
+    "progressive_clues": [
+      "这是一位科学家",
+      "他生活在17世纪的英国",
+      "他的研究奠定了经典物理学的基础",
+      "据说一颗苹果启发了他的灵感",
+      "他提出了三大运动定律",
+      "他发现了万有引力定律",
+      "他还是微积分的发明者之一",
+      "他的名字是一种力量的单位"
+    ],
+    "twenty_q_meta": {"is_real": true, "is_scientist": true},
+    "description_keywords": [["苹果", "引力", "物理"]],
+    "emoji_description": ["🍎⬇️", "🔬📚"]
+  },
+  {
+    "name": "曹操",
+    "aliases": ["孟德", "曹孟德", "阿瞒"],
+    "category": "历史人物",
+    "subcategory": "三国",
+    "difficulty": 2,
+    "progressive_clues": [
+      "这是一位中国古代的政治家",
+      "他活跃在东汉末年",
+      "他是三国时期魏国的奠基人",
+      "他说过「宁教我负天下人」",
+      "他是一位诗人，写过「短歌行」",
+      "他的军事才能与诸葛亮齐名",
+      "他的小名叫「阿瞒」",
+      "他的姓氏在百家姓中排第一"
+    ],
+    "twenty_q_meta": {"is_real": true, "is_chinese": true, "is_ancient": true},
+    "description_keywords": [["三国", "魏国", "诗人"]],
+    "emoji_description": ["⚔️👑", "📜🏰"]
+  },
+  {
+    "name": "哈利波特",
+    "aliases": ["Harry Potter", "哈利", "大难不死的男孩"],
+    "category": "虚构角色",
+    "subcategory": "奇幻小说",
+    "difficulty": 1,
+    "progressive_clues": [
+      "这是一个虚构角色",
+      "他来自一部奇幻小说系列",
+      "他是一位巫师",
+      "他额头上有一道闪电形伤疤",
+      "他就读于霍格沃茨魔法学校",
+      "他最好的朋友是赫敏和罗恩",
+      "他的宿敌是伏地魔",
+      "他有一副圆框眼镜"
+    ],
+    "twenty_q_meta": {"is_real": false, "is_fictional": true},
+    "description_keywords": [["巫师", "霍格沃茨", "闪电"]],
+    "emoji_description": ["⚡🧙", "📚🪄"]
   }
 ]

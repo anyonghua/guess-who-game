@@ -25,17 +25,25 @@
         </div>
       </OrnateFrame>
     </div>
+
+    <!-- 题库统计 -->
+    <div v-if="stats" class="stats-bar">
+      题库: {{ stats.total }} 题
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../stores/game'
+import { api } from '../api/client'
 import OrnateFrame from '../components/OrnateFrame.vue'
 import RuneDivider from '../components/RuneDivider.vue'
 
 const router = useRouter()
 const game = useGameStore()
+const stats = ref<{ total: number; by_category: Record<string, number> } | null>(null)
 
 const modes = [
   { id: 'progressive', icon: '🔦', name: '渐进揭秘', desc: '线索逐条出现，越早猜对越厉害', available: true },
@@ -43,10 +51,20 @@ const modes = [
   { id: 'chain', icon: '🤝', name: '描述接龙', desc: '三个关键词，猜出一个名字', available: false },
 ]
 
-function handleModeClick(mode: typeof modes[0]) {
+onMounted(async () => {
+  try {
+    stats.value = await api.getQuestionStats()
+  } catch (e) {
+    // 忽略统计加载失败
+  }
+})
+
+async function handleModeClick(mode: typeof modes[0]) {
   if (!mode.available) return
-  game.startGame()
-  router.push('/game')
+  await game.startGame('normal')
+  if (!game.error) {
+    router.push('/game')
+  }
 }
 </script>
 
@@ -156,5 +174,12 @@ function handleModeClick(mode: typeof modes[0]) {
 .mode-seal.locked {
   border-color: var(--diablo-stone-border);
   color: var(--diablo-stone-border);
+}
+.stats-bar {
+  margin-top: 24px;
+  font-family: var(--font-cinzel);
+  font-size: 11px;
+  color: var(--diablo-muted);
+  letter-spacing: 2px;
 }
 </style>
