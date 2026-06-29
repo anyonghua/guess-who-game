@@ -15,19 +15,11 @@ async function request(path: string, options: RequestInit = {}) {
 export const api = {
   // === 渐进揭秘 ===
   startGame(difficulty = 'normal') {
-    return request('/game/progressive/start', {
-      method: 'POST',
-      body: JSON.stringify({ difficulty }),
-    })
+    return request('/game/progressive/start', { method: 'POST', body: JSON.stringify({ difficulty }) })
   },
-
   submitGuess(sessionId: string, answer: string) {
-    return request(`/game/progressive/${sessionId}/guess`, {
-      method: 'POST',
-      body: JSON.stringify({ answer }),
-    })
+    return request(`/game/progressive/${sessionId}/guess`, { method: 'POST', body: JSON.stringify({ answer }) })
   },
-
   getResult(sessionId: string) {
     return request(`/game/progressive/${sessionId}/result`)
   },
@@ -36,23 +28,28 @@ export const api = {
   startTwentyQ() {
     return request('/game/twenty-q/start', { method: 'POST' })
   },
-
   askQuestion(sessionId: string, question: string) {
-    return request(`/game/twenty-q/${sessionId}/ask`, {
-      method: 'POST',
-      body: JSON.stringify({ question }),
-    })
+    return request(`/game/twenty-q/${sessionId}/ask`, { method: 'POST', body: JSON.stringify({ question }) })
   },
-
   finalGuess(sessionId: string, answer: string) {
-    return request(`/game/twenty-q/${sessionId}/final-guess`, {
-      method: 'POST',
-      body: JSON.stringify({ answer }),
-    })
+    return request(`/game/twenty-q/${sessionId}/final-guess`, { method: 'POST', body: JSON.stringify({ answer }) })
   },
-
   getTwentyQResult(sessionId: string) {
     return request(`/game/twenty-q/${sessionId}/result`)
+  },
+
+  // === 描述接龙 ===
+  startChain() {
+    return request('/game/chain/start', { method: 'POST' })
+  },
+  chainGuess(sessionId: string, answer: string) {
+    return request(`/game/chain/${sessionId}/guess`, { method: 'POST', body: JSON.stringify({ answer }) })
+  },
+  chainHint(sessionId: string) {
+    return request(`/game/chain/${sessionId}/hint`, { method: 'POST' })
+  },
+  getChainResult(sessionId: string) {
+    return request(`/game/chain/${sessionId}/result`)
   },
 
   // === 题库 ===

@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
-from app.routers import game, questions, twenty_q
+from app.routers import game, questions, twenty_q, chain
 
 
 @asynccontextmanager
@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="🎭 猜猜TA是谁",
     description="猜人名小游戏 API",
-    version="0.3.0",
+    version="0.4.0",
     lifespan=lifespan,
 )
 
@@ -31,12 +31,13 @@ app.add_middleware(
 
 app.include_router(game.router, prefix="/api/game/progressive", tags=["渐进揭秘"])
 app.include_router(twenty_q.router, prefix="/api/game/twenty-q", tags=["二十问"])
+app.include_router(chain.router, prefix="/api/game/chain", tags=["描述接龙"])
 app.include_router(questions.router, prefix="/api/questions", tags=["题库"])
 
 
 @app.get("/")
 async def root():
-    return {"message": "🎭 猜猜TA是谁 API", "version": "0.3.0"}
+    return {"message": "🎭 猜猜TA是谁 API", "version": "0.4.0"}
 
 
 @app.get("/health")
