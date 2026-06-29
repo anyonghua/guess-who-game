@@ -10,8 +10,26 @@
       唤出那隐藏于阴影之名。
     </p>
 
+    <!-- 单人模式 -->
+    <div class="section-label">单人挑战</div>
     <div class="mode-panel">
-      <OrnateFrame v-for="mode in modes" :key="mode.id" class="mode-entry" @click="handleModeClick(mode)">
+      <OrnateFrame v-for="mode in soloModes" :key="mode.id" class="mode-entry" @click="handleModeClick(mode)">
+        <div class="mode-glow" />
+        <div class="mode-row">
+          <div class="mode-sigil">{{ mode.icon }}</div>
+          <div class="mode-info">
+            <div class="mode-name">{{ mode.name }}</div>
+            <div class="mode-desc">{{ mode.desc }}</div>
+          </div>
+          <div class="mode-seal">进入</div>
+        </div>
+      </OrnateFrame>
+    </div>
+
+    <!-- 对战模式 -->
+    <div class="section-label">多人对战</div>
+    <div class="mode-panel">
+      <OrnateFrame v-for="mode in battleModes" :key="mode.id" class="mode-entry" @click="handleModeClick(mode)">
         <div class="mode-glow" />
         <div class="mode-row">
           <div class="mode-sigil">{{ mode.icon }}</div>
@@ -40,17 +58,22 @@ const router = useRouter()
 const game = useGameStore()
 const stats = ref<{ total: number; by_category: Record<string, number> } | null>(null)
 
-const modes = [
+const soloModes = [
   { id: 'progressive', icon: '🔦', name: '渐进揭秘', desc: '线索逐条出现，越早猜对越厉害', route: '/game' },
   { id: 'twentyq', icon: '❓', name: '二十问', desc: '只问是非题，二十个问题内破案', route: '/twenty-q' },
   { id: 'chain', icon: '🤝', name: '描述接龙', desc: '关键词逐条追加，越少猜对越厉害', route: '/chain' },
+]
+
+const battleModes = [
+  { id: 'battle', icon: '⚔', name: '实时对战', desc: '与真人玩家同时猜，比谁更快', route: '/battle' },
+  { id: 'leaderboard', icon: '🏆', name: '排行榜', desc: '查看全服最强猜名者', route: '/leaderboard' },
 ]
 
 onMounted(async () => {
   try { stats.value = await api.getQuestionStats() } catch (e) {}
 })
 
-async function handleModeClick(mode: typeof modes[0]) {
+async function handleModeClick(mode: any) {
   if (mode.id === 'progressive') {
     await game.startGame('normal')
     if (!game.error) router.push('/game')
@@ -65,8 +88,9 @@ async function handleModeClick(mode: typeof modes[0]) {
 .home-skull { font-size: 40px; margin-bottom: 8px; filter: drop-shadow(0 0 12px var(--diablo-blood-glow)); }
 .home-title { font-family: var(--font-cinzel); font-size: 36px; font-weight: 900; color: var(--diablo-gold-bright); text-shadow: 0 0 20px var(--diablo-gold-glow), 0 2px 4px rgba(0,0,0,0.8); letter-spacing: 3px; margin-bottom: 4px; }
 .home-subtitle { font-family: var(--font-gothic); font-size: 13px; color: var(--diablo-muted); letter-spacing: 4px; margin-bottom: 16px; }
-.home-desc { font-size: 14px; color: var(--diablo-muted); line-height: 1.8; font-style: italic; margin-bottom: 36px; }
-.mode-panel { display: flex; flex-direction: column; gap: 8px; }
+.home-desc { font-size: 14px; color: var(--diablo-muted); line-height: 1.8; font-style: italic; margin-bottom: 28px; }
+.section-label { font-family: var(--font-cinzel); font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--diablo-gold-dim); margin-bottom: 10px; margin-top: 8px; }
+.mode-panel { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .mode-entry { padding: 18px 20px; cursor: pointer; text-align: left; transition: all 0.3s ease; }
 .mode-entry:hover { border-color: var(--diablo-gold-dim); box-shadow: 0 0 16px rgba(200,168,78,0.08); }
 .mode-entry:hover .mode-glow { opacity: 1; }
@@ -77,5 +101,5 @@ async function handleModeClick(mode: typeof modes[0]) {
 .mode-name { font-family: var(--font-cinzel); font-size: 15px; font-weight: 700; color: var(--diablo-fg-bright); letter-spacing: 1px; }
 .mode-desc { font-size: 12px; color: var(--diablo-muted); margin-top: 2px; }
 .mode-seal { font-family: var(--font-cinzel); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; padding: 3px 10px; border: 1px solid var(--diablo-gold-dim); color: var(--diablo-gold); flex-shrink: 0; }
-.stats-bar { margin-top: 24px; font-family: var(--font-cinzel); font-size: 11px; color: var(--diablo-muted); letter-spacing: 2px; }
+.stats-bar { margin-top: 16px; font-family: var(--font-cinzel); font-size: 11px; color: var(--diablo-muted); letter-spacing: 2px; }
 </style>

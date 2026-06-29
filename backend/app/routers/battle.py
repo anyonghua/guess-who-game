@@ -1,76 +1,152 @@
-"""对战服务路由 - 实时对战、好友挑战"""
+"""排行榜 + 好友挑战 API"""
 
-from fastapi import APIRouter
+import uuid
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Optional
+from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_db
+from app.models import GameSession, Question
 
 router = APIRouter()
 
+# 内存排行榜（MVP阶段，后续可换Redis）
+leaderboard = {}  # {player_name: {"score": int, "games": int, "wins": int}}
+challenges = {}   # {challenge_id: ChallengeState}
 
-class MatchRequest(BaseModel):
-    mode: str  # speed | quiz_each_other | chemistry
-    difficulty: str = "normal"
 
-class ChallengeRequest(BaseModel):
-    target_user_id: str
-    mode: str = "speed"
+class ChallengeCreate(BaseModel):
+    player_name: str = "无名者"
 
-class AnswerRequest(BaseModel):
-    room_id: str
+
+class ChallengeSubmit(BaseModel):
     answer: str
 
 
-@router.post("/match")
-async def find_match(req: MatchRequest):
-    """匹配对手"""
-    # TODO: 匹配系统
+@router.get("/leaderboard")
+async def get_leaderboard():
+    """获取排行榜"""
+    sorted_lb = sorted(leaderboard.items(), key=lambda x: x[1]["score"], reverse=True)
     return {
-        "status": "searching",
-        "mode": req.mode,
-        "message": "正在为你匹配对手..."
+        "ranking": [
+            {
+                "rank": i + 1,
+                "name": name,
+                "score": data["score"],
+                "games": data["games"],
+                "wins": data["wins"],
+            }
+            for i, (name, data) in enumerate(sorted_lb[:50])
+        ]
     }
 
+
+@router.post("/leaderboard/update")
+async def update_leaderboard(name: str, score: int, won: bool = False):
+    """更新排行榜（内部调用）"""
+    if name not in leaderboard:
+        leaderboard[name] = {"score": 0, "games": 0, "wins": 0}
+    leaderboard[name]["score"] += score
+    leaderboard[name]["games"] += 1
+    if won:
+        leaderboard[name]["wins"] += 1
+    return {"ok": True}
+
+
 @router.post("/challenge/create")
-async def create_challenge(req: ChallengeRequest):
+async def create_challenge(req: ChallengeCreate):
     """创建好友挑战"""
-    # TODO: 生成挑战码
-    return {
-        "challenge_id": "challenge_001",
-        "share_code": "ABC123",
-        "share_link": "https://guesswho.game/c/ABC123",
-        "message": "挑战已创建，分享给好友吧！"
+    # 随机选题
+    from app.database import async_session
+    async with async_session() as db:
+        q = await db.execute(select(Question).order_by(func.random()).limit(1))
+        question = q.scalar_one_or_none()
+
+    if not question:
+        raise HTTPException(status_code=404, detail="题库为空")
+
+    challenge_id = str(uuid.uuid4())[:8].upper()
+    clues = question.progressive_clues or []
+
+    challenges[challenge_id] = {
+        "id": challenge_id,
+        "creator": req.player_name,
+        "question_id": question.id,
+        "question_name": question.name,
+        "aliases": question.aliases or [],
+        "clues": clues,
+        "clue_index": 0,
+        "status": "waiting",  # waiting | playing | done
+        "result": None,
     }
+
+    return {
+        "challenge_id": challenge_id,
+        "share_code": challenge_id,
+        "first_clue": clues[0] if clues else "",
+        "total_clues": len(clues),
+    }
+
 
 @router.get("/challenge/{challenge_id}")
 async def get_challenge(challenge_id: str):
-    """获取挑战详情"""
-    # TODO: 从数据库读取挑战信息
+    """获取挑战信息"""
+    ch = challenges.get(challenge_id.upper())
+    if not ch:
+        raise HTTPException(status_code=404, detail="挑战不存在或已过期")
+
     return {
-        "challenge_id": challenge_id,
-        "creator": "玩家A",
-        "mode": "speed",
-        "status": "waiting",
-        "questions": []
+        "challenge_id": ch["id"],
+        "creator": ch["creator"],
+        "status": ch["status"],
+        "first_clue": ch["clues"][0] if ch["clues"] else "",
+        "total_clues": len(ch["clues"]),
     }
 
-@router.post("/challenge/{challenge_id}/answer")
-async def submit_challenge_answer(challenge_id: str, req: AnswerRequest):
+
+@router.post("/challenge/{challenge_id}/guess")
+async def challenge_guess(challenge_id: str, req: ChallengeSubmit):
     """提交挑战答案"""
-    # TODO: 记录答案并计算分数
-    return {
-        "correct": True,
-        "score": 250,
-        "time_taken": 5.2,
-        "message": "回答正确！"
-    }
+    ch = challenges.get(challenge_id.upper())
+    if not ch:
+        raise HTTPException(status_code=404, detail="挑战不存在")
 
-@router.get("/challenge/{challenge_id}/result")
-async def get_challenge_result(challenge_id: str):
-    """获取挑战对比结果"""
-    # TODO: 对比双方成绩
-    return {
-        "player_a": {"name": "玩家A", "score": 1200, "accuracy": 0.8},
-        "player_b": {"name": "玩家B", "score": 950, "accuracy": 0.6},
-        "winner": "玩家A",
-        "verdict": "玩家A 知识面更广！"
-    }
+    if ch["status"] == "done":
+        raise HTTPException(status_code=400, detail="挑战已结束")
+
+    ch["status"] = "playing"
+
+    from app.services.validator import validate_answer
+    result = validate_answer(req.answer, ch["question_name"], ch["aliases"])
+
+    if result["correct"]:
+        multiplier = [8, 7, 6, 5, 4, 3, 2, 1]
+        m = multiplier[min(ch["clue_index"], 7)]
+        score = 100 * m
+        ch["status"] = "done"
+        ch["result"] = {"correct": True, "score": score, "clue_index": ch["clue_index"]}
+        return {
+            "correct": True,
+            "answer": ch["question_name"],
+            "score": score,
+            "clue_index": ch["clue_index"],
+        }
+    else:
+        # 推进线索
+        if ch["clue_index"] < len(ch["clues"]) - 1:
+            ch["clue_index"] += 1
+            return {
+                "correct": False,
+                "next_clue": ch["clues"][ch["clue_index"]],
+                "clue_index": ch["clue_index"],
+            }
+        else:
+            ch["status"] = "done"
+            ch["result"] = {"correct": False, "score": 50}
+            return {
+                "correct": False,
+                "answer": ch["question_name"],
+                "score": 50,
+                "game_over": True,
+            }
