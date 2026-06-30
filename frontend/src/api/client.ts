@@ -13,6 +13,23 @@ async function request(path: string, options: RequestInit = {}) {
 }
 
 export const api = {
+  // === 用户 ===
+  createPlayer(nickname: string) {
+    return request('/user/create', { method: 'POST', body: JSON.stringify({ nickname }) })
+  },
+  getPlayer(playerId: string) {
+    return request(`/user/${playerId}`)
+  },
+  addXp(playerId: string, amount: number, reason: string) {
+    return request(`/user/${playerId}/xp`, { method: 'POST', body: JSON.stringify({ amount, reason }) })
+  },
+  recordGame(playerId: string, score: number, won: boolean) {
+    return request(`/user/${playerId}/game-result?score=${score}&won=${won}`, { method: 'POST' })
+  },
+  getItems() { return request('/user/items/list') },
+  getAchievements() { return request('/user/achievements/list') },
+  getLevels() { return request('/user/levels') },
+
   // === 渐进揭秘 ===
   startGame(difficulty = 'normal') {
     return request('/game/progressive/start', { method: 'POST', body: JSON.stringify({ difficulty }) })
@@ -25,35 +42,23 @@ export const api = {
   },
 
   // === 二十问 ===
-  startTwentyQ() {
-    return request('/game/twenty-q/start', { method: 'POST' })
-  },
+  startTwentyQ() { return request('/game/twenty-q/start', { method: 'POST' }) },
   askQuestion(sessionId: string, question: string) {
     return request(`/game/twenty-q/${sessionId}/ask`, { method: 'POST', body: JSON.stringify({ question }) })
   },
   finalGuess(sessionId: string, answer: string) {
     return request(`/game/twenty-q/${sessionId}/final-guess`, { method: 'POST', body: JSON.stringify({ answer }) })
   },
-  getTwentyQResult(sessionId: string) {
-    return request(`/game/twenty-q/${sessionId}/result`)
-  },
+  getTwentyQResult(sessionId: string) { return request(`/game/twenty-q/${sessionId}/result`) },
 
   // === 描述接龙 ===
-  startChain() {
-    return request('/game/chain/start', { method: 'POST' })
-  },
+  startChain() { return request('/game/chain/start', { method: 'POST' }) },
   chainGuess(sessionId: string, answer: string) {
     return request(`/game/chain/${sessionId}/guess`, { method: 'POST', body: JSON.stringify({ answer }) })
   },
-  chainHint(sessionId: string) {
-    return request(`/game/chain/${sessionId}/hint`, { method: 'POST' })
-  },
-  getChainResult(sessionId: string) {
-    return request(`/game/chain/${sessionId}/result`)
-  },
+  chainHint(sessionId: string) { return request(`/game/chain/${sessionId}/hint`, { method: 'POST' }) },
+  getChainResult(sessionId: string) { return request(`/game/chain/${sessionId}/result`) },
 
   // === 题库 ===
-  getQuestionStats() {
-    return request('/questions/stats')
-  },
+  getQuestionStats() { return request('/questions/stats') },
 }
