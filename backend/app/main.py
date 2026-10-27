@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import socketio as socketio_lib
 
 from app.database import init_db
-from app.routers import game, questions, twenty_q, chain, battle, user, daily
+from app.routers import game, questions, twenty_q, chain, battle, user, daily, generator
 from app.services.battle_service import sio
 
 
@@ -38,6 +38,7 @@ fastapi_app.include_router(battle.router, prefix="/api/battle", tags=["对战"])
 fastapi_app.include_router(user.router, prefix="/api/user", tags=["用户"])
 fastapi_app.include_router(questions.router, prefix="/api/questions", tags=["题库"])
 fastapi_app.include_router(daily.router, prefix="/api/daily", tags=["每日挑战"])
+fastapi_app.include_router(generator.router, prefix="/api/generator", tags=["动态出题"])
 
 
 @fastapi_app.get("/api")

@@ -77,6 +77,7 @@ const regName = ref('')
 
 const soloModes = [
   { id: 'daily', icon: '📅', name: '每日挑战', desc: '全球同题每天三题，积分上榜', route: '/daily' },
+  { id: 'variant', icon: '🔮', name: '变体出题', desc: '关键词拼图，每局全新组合', route: '/variant' },
   { id: 'progressive', icon: '🔦', name: '渐进揭秘', desc: '线索逐条出现，越早猜对越厉害', route: '/game' },
   { id: 'twentyq', icon: '❓', name: '二十问', desc: '只问是非题，二十个问题内破案', route: '/twenty-q' },
   { id: 'chain', icon: '🤝', name: '描述接龙', desc: '关键词逐条追加，越少猜对越厉害', route: '/chain' },

@@ -6,6 +6,7 @@ const routes = [
   { path: '/twenty-q', name: 'TwentyQ', component: () => import('../views/TwentyQView.vue') },
   { path: '/chain', name: 'Chain', component: () => import('../views/ChainView.vue') },
   { path: '/daily', name: 'Daily', component: () => import('../views/DailyView.vue') },
+  { path: '/variant', name: 'Variant', component: () => import('../views/VariantView.vue') },
   { path: '/battle', name: 'Battle', component: () => import('../views/BattleView.vue') },
   { path: '/leaderboard', name: 'Leaderboard', component: () => import('../views/LeaderboardView.vue') },
   { path: '/profile', name: 'Profile', component: () => import('../views/ProfileView.vue') },

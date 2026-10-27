@@ -66,4 +66,10 @@ export const api = {
   dailyFinish: (sessionId: string, playerName: string) => post(`/daily/${sessionId}/finish`, { player_name: playerName }),
   dailyLeaderboard: (date?: string) => get('/daily/leaderboard' + (date ? `?date=${date}` : '')),
   dailyToday: () => get('/daily/today'),
+
+  // 动态出题（变体）
+  variantStart: () => post('/generator/start'),
+  variantClue: (sessionId: string) => get(`/generator/${sessionId}/clue`),
+  variantGuess: (sessionId: string, answer: string) => post(`/generator/${sessionId}/guess`, { answer }),
+  generatorConfig: () => get('/generator/config'),
 }
