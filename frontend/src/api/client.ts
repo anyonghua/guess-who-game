@@ -58,4 +58,12 @@ export const api = {
 
   // 题库
   getQuestionStats: () => get('/questions/stats'),
+
+  // 每日挑战
+  dailyStart: (playerName: string) => post('/daily/start', { player_name: playerName }),
+  dailyClue: (sessionId: string) => get(`/daily/${sessionId}/clue`),
+  dailyGuess: (sessionId: string, answer: string) => post(`/daily/${sessionId}/guess`, { answer }),
+  dailyFinish: (sessionId: string, playerName: string) => post(`/daily/${sessionId}/finish`, { player_name: playerName }),
+  dailyLeaderboard: (date?: string) => get('/daily/leaderboard' + (date ? `?date=${date}` : '')),
+  dailyToday: () => get('/daily/today'),
 }

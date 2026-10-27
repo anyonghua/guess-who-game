@@ -5,6 +5,7 @@ const routes = [
   { path: '/game', name: 'Game', component: () => import('../views/GameView.vue') },
   { path: '/twenty-q', name: 'TwentyQ', component: () => import('../views/TwentyQView.vue') },
   { path: '/chain', name: 'Chain', component: () => import('../views/ChainView.vue') },
+  { path: '/daily', name: 'Daily', component: () => import('../views/DailyView.vue') },
   { path: '/battle', name: 'Battle', component: () => import('../views/BattleView.vue') },
   { path: '/leaderboard', name: 'Leaderboard', component: () => import('../views/LeaderboardView.vue') },
   { path: '/profile', name: 'Profile', component: () => import('../views/ProfileView.vue') },

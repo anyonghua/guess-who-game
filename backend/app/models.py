@@ -73,3 +73,16 @@ class Player(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     last_active = Column(DateTime, default=datetime.utcnow)
+
+
+class DailyScore(Base):
+    """每日挑战成绩（YYYY-MM-DD 同题全球排行）"""
+    __tablename__ = "daily_scores"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    date = Column(String(10), nullable=False, index=True)  # YYYY-MM-DD
+    player_name = Column(String(50), nullable=False, default="匿名玩家")
+    score = Column(Integer, nullable=False, default=0)
+    correct = Column(Integer, nullable=False, default=0)   # 猜对题数 / 总题数
+    total_clues = Column(Integer, nullable=False, default=0)  # 消耗线索总数
+    created_at = Column(DateTime, default=datetime.utcnow)
