@@ -80,15 +80,6 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  // 跳过线索（本地处理，不需要调API）
-  function skipClue() {
-    if (session.value && canNextClue.value) {
-      // 跳过相当于猜错一次，但不提交答案
-      // 我们需要调 API 来推进线索
-      // 暂时用本地逻辑
-    }
-  }
-
   // 获取结果
   async function getResult() {
     if (!sessionId.value) return null

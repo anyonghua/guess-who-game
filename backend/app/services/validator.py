@@ -52,8 +52,14 @@ def validate_answer(user_input: str, correct_name: str, aliases: list[str]) -> d
         if norm_input == normalize(alias):
             return {"correct": True, "match_type": "alias"}
 
-    # 3. 模糊匹配（编辑距离 ≤ 2）
-    if levenshtein(norm_input, norm_name) <= 2:
+    # 3. 模糊匹配（长度自适应编辑距离阈值）
+    # 修复（2026-10-27）：旧版绝对阈值 ≤2 有洞——2字输入能匹配任意2字人名
+    # （"测试" vs "雷军" 距离=2 会被判对）。改为按名字长度自适应：
+    #   1字名：只能精确；2-3字名：容1个错字（"雷均"→"雷军"）；4字+：容2个错字
+    name_len = len(norm_name)
+    threshold = 0 if name_len <= 1 else (1 if name_len <= 3 else 2)
+    # 单字输入不做模糊匹配（"雷"不能蒙对"雷军"），1字名只能靠精确/别名
+    if len(norm_input) >= 2 and levenshtein(norm_input, norm_name) <= threshold:
         return {"correct": True, "match_type": "fuzzy"}
 
     # 4. 拼音匹配

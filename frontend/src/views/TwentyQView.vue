@@ -193,7 +193,7 @@ async function submitFinalGuess() {
   loading.value = true
 
   try {
-    const result = await api.finalGuess(sessionId.value, answer)
+    await api.finalGuess(sessionId.value, answer)
     // 跳转到结果页（复用渐进揭秘的结果页，传参数）
     router.push({
       path: '/result',

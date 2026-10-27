@@ -88,7 +88,7 @@ def calc_stamina(current_stamina: int, last_regen: float) -> int:
     return min(STAMINA_MAX, current_stamina + regen_count)
 
 
-# === API 路由 ===
+# === 静态路由（必须在 /{player_id} 之前） ===
 
 @router.post("/create")
 async def create_player(req: CreateUserRequest, db: AsyncSession = Depends(get_db)):
@@ -125,6 +125,31 @@ async def create_player(req: CreateUserRequest, db: AsyncSession = Depends(get_d
         "achievements": [],
     }
 
+
+@router.get("/items/list")
+async def list_items():
+    """获取道具列表"""
+    return {"items": ITEMS}
+
+
+@router.get("/achievements/list")
+async def list_achievements():
+    """获取成就列表"""
+    return {"achievements": ACHIEVEMENTS}
+
+
+@router.get("/levels")
+async def get_level_table():
+    """获取等级经验表"""
+    return {
+        "levels": [
+            {"level": i, "xp_required": xp}
+            for i, xp in enumerate(LEVEL_TABLE)
+        ]
+    }
+
+
+# === 动态路由（/{player_id}） ===
 
 @router.get("/{player_id}")
 async def get_player(player_id: str, db: AsyncSession = Depends(get_db)):
@@ -208,27 +233,4 @@ async def record_game(player_id: str, score: int, won: bool = False, db: AsyncSe
         "level": new_level,
         "level_up": new_level > old_level,
         "games_played": player.games_played,
-    }
-
-
-@router.get("/items/list")
-async def list_items():
-    """获取道具列表"""
-    return {"items": ITEMS}
-
-
-@router.get("/achievements/list")
-async def list_achievements():
-    """获取成就列表"""
-    return {"achievements": ACHIEVEMENTS}
-
-
-@router.get("/levels")
-async def get_level_table():
-    """获取等级经验表"""
-    return {
-        "levels": [
-            {"level": i, "xp_required": xp}
-            for i, xp in enumerate(LEVEL_TABLE)
-        ]
     }

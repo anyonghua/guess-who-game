@@ -1,64 +1,61 @@
-const API_BASE = 'http://localhost:8000/api'
+const API_BASE = '/api'
 
 async function request(path: string, options: RequestInit = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
   })
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: '请求失败' }))
-    throw new Error(err.detail || `HTTP ${res.status}`)
+    const err = await res.text()
+    throw new Error(`API error ${res.status}: ${err}`)
   }
   return res.json()
 }
 
+async function get(path: string) {
+  return request(path)
+}
+
+async function post(path: string, data?: any) {
+  return request(path, { method: 'POST', body: data ? JSON.stringify(data) : undefined })
+}
+
 export const api = {
-  // === 用户 ===
-  createPlayer(nickname: string) {
-    return request('/user/create', { method: 'POST', body: JSON.stringify({ nickname }) })
-  },
-  getPlayer(playerId: string) {
-    return request(`/user/${playerId}`)
-  },
-  addXp(playerId: string, amount: number, reason: string) {
-    return request(`/user/${playerId}/xp`, { method: 'POST', body: JSON.stringify({ amount, reason }) })
-  },
-  recordGame(playerId: string, score: number, won: boolean) {
-    return request(`/user/${playerId}/game-result?score=${score}&won=${won}`, { method: 'POST' })
-  },
-  getItems() { return request('/user/items/list') },
-  getAchievements() { return request('/user/achievements/list') },
-  getLevels() { return request('/user/levels') },
+  get,
+  post,
 
-  // === 渐进揭秘 ===
-  startGame(difficulty = 'normal') {
-    return request('/game/progressive/start', { method: 'POST', body: JSON.stringify({ difficulty }) })
-  },
-  submitGuess(sessionId: string, answer: string) {
-    return request(`/game/progressive/${sessionId}/guess`, { method: 'POST', body: JSON.stringify({ answer }) })
-  },
-  getResult(sessionId: string) {
-    return request(`/game/progressive/${sessionId}/result`)
-  },
+  // 用户
+  createPlayer: (nickname: string) => post('/user/create', { nickname }),
+  getPlayer: (playerId: string) => get(`/user/${playerId}`),
+  recordGame: (playerId: string, score: number, won: boolean) => post(`/user/${playerId}/game-result?score=${score}&won=${won}`),
+  getLevels: () => get('/user/levels'),
+  getItems: () => get('/user/items/list'),
+  getAchievements: () => get('/user/achievements/list'),
 
-  // === 二十问 ===
-  startTwentyQ() { return request('/game/twenty-q/start', { method: 'POST' }) },
-  askQuestion(sessionId: string, question: string) {
-    return request(`/game/twenty-q/${sessionId}/ask`, { method: 'POST', body: JSON.stringify({ question }) })
-  },
-  finalGuess(sessionId: string, answer: string) {
-    return request(`/game/twenty-q/${sessionId}/final-guess`, { method: 'POST', body: JSON.stringify({ answer }) })
-  },
-  getTwentyQResult(sessionId: string) { return request(`/game/twenty-q/${sessionId}/result`) },
+  // 渐进揭秘
+  startGame: (difficulty: string) => post('/game/progressive/progressive/start', { difficulty }),
+  getClue: (sessionId: string) => get(`/game/progressive/progressive/${sessionId}/clue`),
+  submitGuess: (sessionId: string, answer: string) => post(`/game/progressive/progressive/${sessionId}/guess`, { answer }),
+  getResult: (sessionId: string) => get(`/game/progressive/progressive/${sessionId}/result`),
 
-  // === 描述接龙 ===
-  startChain() { return request('/game/chain/start', { method: 'POST' }) },
-  chainGuess(sessionId: string, answer: string) {
-    return request(`/game/chain/${sessionId}/guess`, { method: 'POST', body: JSON.stringify({ answer }) })
-  },
-  chainHint(sessionId: string) { return request(`/game/chain/${sessionId}/hint`, { method: 'POST' }) },
-  getChainResult(sessionId: string) { return request(`/game/chain/${sessionId}/result`) },
+  // 二十问
+  startTwentyQ: () => post('/game/twenty-q/start'),
+  askQuestion: (sessionId: string, question: string) => post(`/game/twenty-q/${sessionId}/ask`, { question }),
+  finalGuess: (sessionId: string, answer: string) => post(`/game/twenty-q/${sessionId}/final-guess`, { answer }),
+  getTwentyQResult: (sessionId: string) => get(`/game/twenty-q/${sessionId}/result`),
 
-  // === 题库 ===
-  getQuestionStats() { return request('/questions/stats') },
+  // 描述接龙
+  startChain: () => post('/game/chain/start'),
+  chainHint: (sessionId: string) => post(`/game/chain/${sessionId}/hint`),
+  chainGuess: (sessionId: string, answer: string) => post(`/game/chain/${sessionId}/guess`, { answer }),
+  getChainResult: (sessionId: string) => get(`/game/chain/${sessionId}/result`),
+
+  // 排行榜 & 好友挑战
+  getLeaderboard: () => get('/battle/leaderboard'),
+  createChallenge: (playerName: string) => post('/battle/challenge/create', { player_name: playerName }),
+  getChallenge: (challengeId: string) => get(`/battle/challenge/${challengeId}`),
+  submitChallengeGuess: (challengeId: string, answer: string) => post(`/battle/challenge/${challengeId}/guess`, { answer }),
+
+  // 题库
+  getQuestionStats: () => get('/questions/stats'),
 }
